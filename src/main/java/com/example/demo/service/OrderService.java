@@ -45,6 +45,7 @@ public class OrderService {
     }
 
     /**
+     * 测试github推送
      * 更新订单信息
      * @param order 待更新的订单对象
      * @return 更新成功返回true，订单不存在返回false
