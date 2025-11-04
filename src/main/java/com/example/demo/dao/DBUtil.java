@@ -8,7 +8,7 @@ import java.sql.*;
  */
 public class DBUtil {
     // 数据库连接URL（test.db位于项目根目录）
-    private static final String URL = "jdbc:sqlite:/Users/yuxiao/Downloads/0713demo/test.db";
+    private static final String URL = "jdbc:sqlite:test.db";
     
     /**
      * 获取数据库连接
