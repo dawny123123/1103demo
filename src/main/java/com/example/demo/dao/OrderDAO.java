@@ -6,6 +6,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 /**
  * 订单数据访问对象（SQLite实现）
@@ -144,5 +148,26 @@ public class OrderDAO {
         }
         orderMap.remove(orderId);
         return true;
+    }
+
+    /**
+     * 根据用户ID查询订单列表
+     * @param userId 用户ID
+     * @return 返回该用户的所有订单列表，按创建时间降序排列；如果userId为null或空字符串，返回空列表
+     */
+    public List<Order> getOrdersByUserId(String userId) {
+        // 参数校验：userId为null或空字符串时，返回空列表
+        if (userId == null || userId.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 使用流式操作过滤、排序并收集结果
+        return orderMap.values().stream()
+            .filter(order -> userId.equals(order.getUserId()))
+            .sorted(Comparator.comparing(
+                Order::getCreateTime,
+                Comparator.nullsLast(Comparator.reverseOrder())
+            ))
+            .collect(Collectors.toList());
     }
 }

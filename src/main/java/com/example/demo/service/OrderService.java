@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dao.OrderDAO;
 import com.example.demo.entity.Order;
+import java.util.List;
 
 /**
  * 订单服务类（演示业务逻辑与数据访问的分离）
@@ -77,5 +78,20 @@ public class OrderService {
         }
 
         return getOrderDAO().deleteOrder(orderId);
+    }
+
+    /**
+     * 根据用户ID查询订单列表
+     * @param userId 用户ID
+     * @return 返回该用户的所有订单列表，按创建时间降序排列
+     * @throws IllegalArgumentException 当userId为null或空字符串时抛出
+     */
+    public List<Order> getOrdersByUserId(String userId) {
+        // 参数校验
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new IllegalArgumentException("用户ID不能为空");
+        }
+
+        return getOrderDAO().getOrdersByUserId(userId);
     }
 }
