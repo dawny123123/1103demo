@@ -1,0 +1,95 @@
+@startuml
+' 核心类图'
+class App {
+  +main(String[] args)
+  +orderDAO() : OrderDAO
+}
+
+class OrderController {
+  -orderService : OrderService
+  -orderDAO : OrderDAO
+  +createOrder(Order) : ResponseEntity
+  +getAllOrders() : ResponseEntity
+  +getOrder(String) : ResponseEntity
+  +getOrdersByUserId(String) : ResponseEntity
+  +updateOrder(String, Order) : ResponseEntity
+  +deleteOrder(String) : ResponseEntity
+  +health() : ResponseEntity
+}
+
+class OrderService {
+  -orderDAO : OrderDAO
+  +createOrder(Order) : boolean
+  +getOrder(String) : Order
+  +updateOrder(Order) : boolean
+  +deleteOrder(String) : boolean
+  +getOrdersByUserId(String) : List<Order>
+  +getAllOrders() : List<Order>
+  #getOrderDAO() : OrderDAO
+}
+
+class OrderDAO {
+  -orderMap : Map<String,Order>
+  +initTable()
+  +saveToDatabase()
+  +loadFromDatabase()
+  +createOrder(Order) : boolean
+  +getOrder(String) : Order
+  +updateOrder(Order) : boolean
+  +deleteOrder(String) : boolean
+  +getOrdersByUserId(String) : List<Order>
+  +getAllOrders() : List<Order>
+}
+
+class Order {
+  -orderId : String
+  -userId : String
+  -productId : String
+  -quantity : Integer
+  -totalAmount : BigDecimal
+  -status : Integer
+  -createTime : LocalDateTime
+  -payTime : LocalDateTime
+  -updateTime : LocalDateTime
+  +Order()
+  +Order(String, String, String, Integer, BigDecimal)
+  +Order(String, String, String, Integer, BigDecimal, Integer, LocalDateTime, LocalDateTime, LocalDateTime)
+  +get*/set*()
+}
+
+class DBUtil {
+  +getConnection() : Connection
+}
+
+App --> OrderDAO
+OrderController --> OrderService
+OrderController --> OrderDAO
+OrderService --> OrderDAO
+OrderDAO --> Order
+OrderDAO --> DBUtil
+
+note right of OrderController
+  REST控制器处理HTTP请求
+  使用Spring注解:
+  @RestController
+  @RequestMapping
+  @Autowired
+end note
+
+note right of OrderService
+  业务逻辑层
+  使用Spring注解:
+  @Service
+  @Autowired
+end note
+
+note right of OrderDAO
+  数据访问层
+  管理内存和数据库操作
+end note
+
+note right of Order
+  订单实体类
+  包含订单的所有属性
+end note
+@enduml

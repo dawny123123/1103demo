@@ -1,0 +1,86 @@
+@startuml
+' 设置皮肤参数
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment center
+skinparam shadowing false
+
+' 定义标题
+title 系统架构图
+
+' 定义包结构
+package "应用程序层" {
+    [App\n(主程序入口)]
+}
+
+package "服务层" {
+    [OrderService\n(订单服务类)]
+}
+
+package "数据访问层" {
+    [OrderDAO\n(订单数据访问对象)]
+    [DBUtil\n(数据库连接工具)]
+}
+
+package "实体层" {
+    [Order\n(订单实体类)]
+}
+
+package "外部系统" {
+    database "SQLite数据库" {
+        [order0713表]
+    }
+    
+    frame "内存存储" {
+        [ConcurrentHashMap\n(订单内存存储)]
+    }
+}
+
+' 定义组件间的依赖关系
+[App] --> [OrderService] : 使用
+[OrderService] --> [OrderDAO] : 调用
+[OrderDAO] --> [DBUtil] : 获取连接
+[OrderDAO] --> [ConcurrentHashMap] : 读写
+[OrderService] --> [Order] : 操作
+[OrderDAO] --> [Order] : 操作
+[OrderDAO] --> [order0713表] : 持久化
+
+' 定义注释
+note right of [App]
+  程序入口点
+  负责协调各组件工作
+end note
+
+note right of [OrderService]
+  业务逻辑层
+  处理订单相关业务规则
+end note
+
+note right of [OrderDAO]
+  数据访问层
+  提供CRUD操作接口
+  管理内存和数据库同步
+end note
+
+note top of [Order]
+  实体类
+  定义订单的数据结构
+  包含订单的所有属性
+end note
+
+note right of [DBUtil]
+  数据库工具类
+  提供数据库连接
+end note
+
+note bottom of [order0713表]
+  持久化存储
+  SQLite数据库表
+end note
+
+note bottom of [ConcurrentHashMap]
+  内存存储
+  提供快速访问
+  程序运行时数据存储
+end note
+
+@enduml
