@@ -1,0 +1,26 @@
+@startuml
+' 创建订单流程时序图'
+actor 用户 as user
+participant "React前端" as frontend
+participant "OrderController" as controller
+participant "OrderService" as service
+participant "OrderDAO" as dao
+database 数据库 as db
+
+user -> frontend : 提交订单表单
+frontend -> controller : POST /api/orders
+controller -> service : createOrder(order)
+service -> service : 验证订单数据
+service -> dao : createOrder(order)
+dao -> dao : 保存到内存Map
+dao --> service : 返回结果
+service --> controller : 返回结果
+controller -> dao : saveToDatabase()
+dao -> db : 持久化到SQLite
+dao --> controller : 返回结果
+controller -> frontend : 返回响应
+frontend -> user : 显示创建结果
+
+note over service : 验证购买数量>0\n验证订单金额>0
+note over dao : 使用ConcurrentHashMap\n存储订单数据
+@enduml

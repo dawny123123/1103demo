@@ -178,7 +178,7 @@ function App() {
   return (
     <div className="App">
       <div className="header">
-        <h1>📦 订单管理系统</h1>
+        <h1>📦 灵码专属版订单管理系统</h1>
         <div className={`connection-status ${isConnected ? 'connected' : 'disconnected'}`}>
           {isConnected ? '✅ 后端已连接' : '❌ 后端未连接'}
         </div>
