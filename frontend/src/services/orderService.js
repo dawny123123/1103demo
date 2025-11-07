@@ -20,6 +20,11 @@ export const orderService = {
     return api.get(`/orders/${orderId}`);
   },
 
+  // 获取所有订单列表
+  getAllOrders: () => {
+    return api.get('/orders');
+  },
+
   // 根据用户ID获取订单列表
   getOrdersByUserId: (userId) => {
     return api.get(`/orders/user/${userId}`);

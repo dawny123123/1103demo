@@ -34,6 +34,12 @@ public class Order {
     // 更新时间
     private LocalDateTime updateTime;
 
+    // 无参构造函数（用于Jackson反序列化）
+    public Order() {
+        this.status = 0;  // 默认待支付
+        this.createTime = LocalDateTime.now();
+    }
+
     // 全参数构造函数
     public Order(String orderId, String userId, String productId, Integer quantity, 
                  BigDecimal totalAmount, Integer status, LocalDateTime createTime, 

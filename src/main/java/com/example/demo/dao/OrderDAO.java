@@ -170,4 +170,18 @@ public class OrderDAO {
             ))
             .collect(Collectors.toList());
     }
+
+    /**
+     * 获取所有订单列表
+     * @return 返回所有订单列表，按创建时间降序排列（最新订单在前）
+     */
+    public List<Order> getAllOrders() {
+        // 使用流式操作获取所有订单并按创建时间降序排序
+        return orderMap.values().stream()
+            .sorted(Comparator.comparing(
+                Order::getCreateTime,
+                Comparator.nullsLast(Comparator.reverseOrder())
+            ))
+            .collect(Collectors.toList());
+    }
 }

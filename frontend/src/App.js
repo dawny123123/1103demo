@@ -29,9 +29,27 @@ function App() {
       await orderService.healthCheck();
       setIsConnected(true);
       showMessage('后端服务连接成功', 'success');
+      // 连接成功后自动加载所有订单
+      loadAllOrders();
     } catch (error) {
       setIsConnected(false);
       showMessage('无法连接到后端服务,请确保后端已启动', 'error');
+    }
+  };
+
+  const loadAllOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await orderService.getAllOrders();
+      if (response.data.success) {
+        setOrders(response.data.data);
+        showMessage(`加载到 ${response.data.count} 个订单`, 'success');
+      }
+    } catch (error) {
+      showMessage(error.response?.data?.message || '加载订单失败', 'error');
+      setOrders([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,9 +80,11 @@ function App() {
           totalAmount: 0,
           status: 0,
         });
-        // 如果当前在查看某个用户的订单,刷新列表
+        // 创建订单后刷新列表
         if (searchUserId) {
           handleSearchByUserId();
+        } else {
+          loadAllOrders();
         }
       }
     } catch (error) {
@@ -105,7 +125,12 @@ function App() {
       const response = await orderService.updateOrder(orderId, updatedOrder);
       if (response.data.success) {
         showMessage('订单状态更新成功!', 'success');
-        handleSearchByUserId();
+        // 根据当前视图刷新列表
+        if (searchUserId) {
+          handleSearchByUserId();
+        } else {
+          loadAllOrders();
+        }
       }
     } catch (error) {
       showMessage(error.response?.data?.message || '更新失败', 'error');
@@ -121,7 +146,12 @@ function App() {
       const response = await orderService.deleteOrder(orderId);
       if (response.data.success) {
         showMessage('订单删除成功!', 'success');
-        handleSearchByUserId();
+        // 根据当前视图刷新列表
+        if (searchUserId) {
+          handleSearchByUserId();
+        } else {
+          loadAllOrders();
+        }
       }
     } catch (error) {
       showMessage(error.response?.data?.message || '删除失败', 'error');
@@ -353,7 +383,7 @@ function App() {
         ) : searchUserId ? (
           <div className="no-orders">暂无订单数据</div>
         ) : (
-          <div className="no-orders">请输入用户ID查询订单</div>
+          <div className="no-orders">暂无订单数据</div>
         )}
       </div>
     </div>

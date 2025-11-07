@@ -103,4 +103,12 @@ public class OrderService {
 
         return getOrderDAO().getOrdersByUserId(userId);
     }
+
+    /**
+     * 获取所有订单列表
+     * @return 返回所有订单列表，按创建时间降序排列（最新订单在前）
+     */
+    public List<Order> getAllOrders() {
+        return getOrderDAO().getAllOrders();
+    }
 }

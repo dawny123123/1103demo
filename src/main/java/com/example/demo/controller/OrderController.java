@@ -56,6 +56,25 @@ public class OrderController {
     }
 
     /**
+     * 获取所有订单列表
+     */
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getAllOrders() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<Order> orders = orderService.getAllOrders();
+            response.put("success", true);
+            response.put("data", orders);
+            response.put("count", orders.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
      * 获取订单详情
      */
     @GetMapping("/{orderId}")
