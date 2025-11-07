@@ -2,14 +2,23 @@ package com.example.demo.service;
 
 import com.example.demo.dao.OrderDAO;
 import com.example.demo.entity.Order;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 /**
  * 订单服务类（演示业务逻辑与数据访问的分离）
  */
+@Service
 public class OrderService {
     // 注入数据访问层
-    private final OrderDAO orderDAO = new OrderDAO();
+    private final OrderDAO orderDAO;
+
+    @Autowired
+    public OrderService(OrderDAO orderDAO) {
+        this.orderDAO = orderDAO;
+    }
 
     /**
      * 创建新订单

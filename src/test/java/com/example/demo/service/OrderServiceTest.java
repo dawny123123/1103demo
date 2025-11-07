@@ -34,12 +34,7 @@ class OrderServiceTest {
         MockitoAnnotations.openMocks(this);
         
         // 创建OrderService实例并注入mock的OrderDAO
-        orderService = new OrderService() {
-            @Override
-            protected OrderDAO getOrderDAO() {
-                return orderDAO;
-            }
-        };
+        orderService = new OrderService(orderDAO);
     }
 
     /**
