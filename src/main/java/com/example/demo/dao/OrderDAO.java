@@ -4,6 +4,7 @@ import com.example.demo.entity.Order;
 import java.sql.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
@@ -17,6 +18,9 @@ import java.util.stream.Collectors;
 public class OrderDAO {
     // 模拟数据库存储 - 使用线程安全的Map
     private final Map<String, Order> orderMap = new ConcurrentHashMap<>();
+    
+    // 时间格式化器
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     /**
      * 初始化数据库表结构
@@ -31,6 +35,7 @@ public class OrderDAO {
                 "quantity INTEGER, " +
                 "totalAmount TEXT, " +
                 "status INTEGER, " +
+                "description TEXT, " +
                 "createTime TEXT, " +
                 "payTime TEXT, " +
                 "updateTime TEXT)";
@@ -46,8 +51,8 @@ public class OrderDAO {
     public void saveToDatabase() {
         String sql = "INSERT OR REPLACE INTO order0713(" +
             "orderId, userId, productId, quantity, " +
-            "totalAmount, status, createTime, payTime, updateTime) " +
-            "VALUES(?,?,?,?,?,?,?,?,?)";
+            "totalAmount, status, description, createTime, payTime, updateTime) " +
+            "VALUES(?,?,?,?,?,?,?,?,?,?)";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -59,9 +64,10 @@ public class OrderDAO {
                 pstmt.setInt(4, order.getQuantity());
                 pstmt.setString(5, order.getTotalAmount().toString());
                 pstmt.setInt(6, order.getStatus());
-                pstmt.setString(7, order.getCreateTime() != null ? order.getCreateTime().toString() : null);
-                pstmt.setString(8, order.getPayTime() != null ? order.getPayTime().toString() : null);
-                pstmt.setString(9, order.getUpdateTime() != null ? order.getUpdateTime().toString() : null);
+                pstmt.setString(7, order.getDescription());
+                pstmt.setString(8, order.getCreateTime() != null ? order.getCreateTime().toString() : null);
+                pstmt.setString(9, order.getPayTime() != null ? order.getPayTime().toString() : null);
+                pstmt.setString(10, order.getUpdateTime() != null ? order.getUpdateTime().toString() : null);
                 pstmt.addBatch();
             }
             
@@ -75,13 +81,61 @@ public class OrderDAO {
      * 从数据库加载数据到内存
      */
     public void loadFromDatabase() {
-        String sql = "SELECT * FROM order0713";
+        String sql = "SELECT orderId, userId, productId, quantity, totalAmount, status, description, createTime, payTime, updateTime FROM order0713";
         
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             
             while (rs.next()) {
+                // 解析时间字段
+                LocalDateTime createTime = null;
+                LocalDateTime payTime = null;
+                LocalDateTime updateTime = null;
+                
+                String createTimeStr = rs.getString("createTime");
+                String payTimeStr = rs.getString("payTime");
+                String updateTimeStr = rs.getString("updateTime");
+                
+                if (createTimeStr != null && !createTimeStr.isEmpty()) {
+                    try {
+                        createTime = LocalDateTime.parse(createTimeStr, FORMATTER);
+                    } catch (Exception e) {
+                        // 如果解析失败，尝试其他格式
+                        try {
+                            createTime = LocalDateTime.parse(createTimeStr);
+                        } catch (Exception e2) {
+                            System.out.println("创建时间解析失败: " + createTimeStr);
+                        }
+                    }
+                }
+                
+                if (payTimeStr != null && !payTimeStr.isEmpty()) {
+                    try {
+                        payTime = LocalDateTime.parse(payTimeStr, FORMATTER);
+                    } catch (Exception e) {
+                        // 如果解析失败，尝试其他格式
+                        try {
+                            payTime = LocalDateTime.parse(payTimeStr);
+                        } catch (Exception e2) {
+                            System.out.println("支付时间解析失败: " + payTimeStr);
+                        }
+                    }
+                }
+                
+                if (updateTimeStr != null && !updateTimeStr.isEmpty()) {
+                    try {
+                        updateTime = LocalDateTime.parse(updateTimeStr, FORMATTER);
+                    } catch (Exception e) {
+                        // 如果解析失败，尝试其他格式
+                        try {
+                            updateTime = LocalDateTime.parse(updateTimeStr);
+                        } catch (Exception e2) {
+                            System.out.println("更新时间解析失败: " + updateTimeStr);
+                        }
+                    }
+                }
+                
                 Order order = new Order(
                     rs.getString("orderId"),
                     rs.getString("userId"),
@@ -89,18 +143,19 @@ public class OrderDAO {
                     rs.getInt("quantity"),
                     new BigDecimal(rs.getString("totalAmount")),
                     rs.getInt("status"),
-                    rs.getObject("createTime", LocalDateTime.class),
-                    rs.getObject("payTime", LocalDateTime.class),
-                    rs.getObject("updateTime", LocalDateTime.class)
+                    rs.getString("description"),
+                    createTime,
+                    payTime,
+                    updateTime
                 );
                 orderMap.put(order.getOrderId(), order);
             }
+            System.out.println("从数据库加载了 " + orderMap.size() + " 条订单记录");
         } catch (SQLException e) {
             System.out.println("数据加载失败: " + e.getMessage());
+            e.printStackTrace();
         }
     }
-    
-    // ... existing CRUD methods ...
     
     /**
      * 创建订单
@@ -110,6 +165,10 @@ public class OrderDAO {
     public boolean createOrder(Order order) {
         if (orderMap.containsKey(order.getOrderId())) {
             return false; // 订单已存在
+        }
+        // 确保创建时间被设置
+        if (order.getCreateTime() == null) {
+            order.setCreateTime(LocalDateTime.now());
         }
         orderMap.put(order.getOrderId(), order);
         return true;
@@ -133,6 +192,8 @@ public class OrderDAO {
         if (!orderMap.containsKey(order.getOrderId())) {
             return false; // 订单不存在
         }
+        // 更新更新时间
+        order.setUpdateTime(LocalDateTime.now());
         orderMap.put(order.getOrderId(), order);
         return true;
     }
@@ -163,7 +224,7 @@ public class OrderDAO {
 
         // 使用流式操作过滤、排序并收集结果
         return orderMap.values().stream()
-            .filter(order -> userId.equals(order.getUserId()))
+            .filter(order -> userId.equals(order.getUserId()))  // 严格匹配用户ID
             .sorted(Comparator.comparing(
                 Order::getCreateTime,
                 Comparator.nullsLast(Comparator.reverseOrder())

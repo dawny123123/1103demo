@@ -18,6 +18,7 @@ public class App {
     public OrderDAO orderDAO() {
         OrderDAO orderDAO = new OrderDAO();
         orderDAO.initTable();
+        orderDAO.loadFromDatabase();  // 加载数据库中的数据到内存
         return orderDAO;
     }
 }

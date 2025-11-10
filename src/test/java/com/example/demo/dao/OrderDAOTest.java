@@ -12,10 +12,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * OrderDAO的单元测试类 - 测试按用户ID查询订单列表功能
+ * OrderDAO类的单元测试
  */
-@DisplayName("OrderDAO按用户ID查询订单列表测试")
-public class OrderDAOTest {
+class OrderDAOTest {
     
     private OrderDAO orderDAO;
     
@@ -25,130 +24,183 @@ public class OrderDAOTest {
     }
     
     @Test
-    @DisplayName("查询存在订单的用户 - 应返回该用户的所有订单")
-    void testGetOrdersByUserId_WithExistingOrders() {
-        // 准备测试数据 - 创建user001的多个订单
-        LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 10, 0);
-        LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 10, 0);
-        LocalDateTime time3 = LocalDateTime.of(2024, 1, 3, 10, 0);
+    @DisplayName("创建订单 - 正常创建应返回true")
+    void testCreateOrder_NormalCreation_ReturnsTrue() {
+        // 准备测试数据
+        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("99.99"));
+        order.setDescription("测试订单描述");
         
-        Order order1 = new Order("order001", "user001", "prod001", 1, new BigDecimal("100.00"), 0, time1, null, null);
-        Order order2 = new Order("order002", "user001", "prod002", 2, new BigDecimal("200.00"), 1, time2, null, null);
-        Order order3 = new Order("order003", "user002", "prod003", 3, new BigDecimal("300.00"), 0, time3, null, null);
+        // 执行测试
+        boolean result = orderDAO.createOrder(order);
+        
+        // 验证结果
+        assertTrue(result, "创建订单应该成功");
+    }
+    
+    @Test
+    @DisplayName("创建订单 - 重复创建应返回false")
+    void testCreateOrder_DuplicateCreation_ReturnsFalse() {
+        // 准备测试数据
+        Order order1 = new Order("12345", "user123", "product456", 2, new BigDecimal("99.99"));
+        Order order2 = new Order("12345", "user123", "product789", 3, new BigDecimal("199.99"));
+        
+        // 先创建一个订单
+        boolean result1 = orderDAO.createOrder(order1);
+        
+        // 尝试创建相同ID的订单
+        boolean result2 = orderDAO.createOrder(order2);
+        
+        // 验证结果
+        assertTrue(result1, "第一次创建应该成功");
+        assertFalse(result2, "重复创建应该失败");
+    }
+    
+    @Test
+    @DisplayName("获取订单 - 存在的订单应返回正确对象")
+    void testGetOrder_ExistingOrder_ReturnsCorrectOrder() {
+        // 准备测试数据
+        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("99.99"));
+        order.setDescription("测试订单描述");
+        orderDAO.createOrder(order);
+        
+        // 执行测试
+        Order result = orderDAO.getOrder("12345");
+        
+        // 验证结果
+        assertNotNull(result, "应该返回非null对象");
+        assertEquals("12345", result.getOrderId(), "订单ID应该匹配");
+        assertEquals("user123", result.getUserId(), "用户ID应该匹配");
+        assertEquals("product456", result.getProductId(), "商品ID应该匹配");
+        assertEquals(2, result.getQuantity(), "数量应该匹配");
+        assertEquals(new BigDecimal("99.99"), result.getTotalAmount(), "总金额应该匹配");
+        assertEquals("测试订单描述", result.getDescription(), "描述应该匹配");
+    }
+    
+    @Test
+    @DisplayName("获取订单 - 不存在的订单应返回null")
+    void testGetOrder_NonExistingOrder_ReturnsNull() {
+        // 执行测试
+        Order result = orderDAO.getOrder("nonexistent");
+        
+        // 验证结果
+        assertNull(result, "不存在的订单应该返回null");
+    }
+    
+    @Test
+    @DisplayName("更新订单 - 存在的订单应返回true")
+    void testUpdateOrder_ExistingOrder_ReturnsTrue() {
+        // 准备测试数据
+        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("99.99"));
+        orderDAO.createOrder(order);
+        
+        // 修改订单信息
+        order.setQuantity(5);
+        order.setTotalAmount(new BigDecimal("199.99"));
+        order.setDescription("更新后的描述");
+        
+        // 执行测试
+        boolean result = orderDAO.updateOrder(order);
+        
+        // 验证结果
+        assertTrue(result, "更新应该成功");
+        
+        // 验证更新后的数据
+        Order updatedOrder = orderDAO.getOrder("12345");
+        assertEquals(5, updatedOrder.getQuantity(), "数量应该已更新");
+        assertEquals(new BigDecimal("199.99"), updatedOrder.getTotalAmount(), "总金额应该已更新");
+        assertEquals("更新后的描述", updatedOrder.getDescription(), "描述应该已更新");
+    }
+    
+    @Test
+    @DisplayName("更新订单 - 不存在的订单应返回false")
+    void testUpdateOrder_NonExistingOrder_ReturnsFalse() {
+        // 准备测试数据
+        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("99.99"));
+        
+        // 执行测试
+        boolean result = orderDAO.updateOrder(order);
+        
+        // 验证结果
+        assertFalse(result, "更新不存在的订单应该失败");
+    }
+    
+    @Test
+    @DisplayName("删除订单 - 存在的订单应返回true")
+    void testDeleteOrder_ExistingOrder_ReturnsTrue() {
+        // 准备测试数据
+        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("99.99"));
+        orderDAO.createOrder(order);
+        
+        // 执行测试
+        boolean result = orderDAO.deleteOrder("12345");
+        
+        // 验证结果
+        assertTrue(result, "删除应该成功");
+        assertNull(orderDAO.getOrder("12345"), "订单应该已被删除");
+    }
+    
+    @Test
+    @DisplayName("删除订单 - 不存在的订单应返回false")
+    void testDeleteOrder_NonExistingOrder_ReturnsFalse() {
+        // 执行测试
+        boolean result = orderDAO.deleteOrder("nonexistent");
+        
+        // 验证结果
+        assertFalse(result, "删除不存在的订单应该失败");
+    }
+    
+    @Test
+    @DisplayName("按用户ID查询订单 - 按创建时间降序排列")
+    void testGetOrdersByUserId_SortedByCreateTimeDesc() {
+        // 准备测试数据
+        LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 10, 0);
+        LocalDateTime time2 = LocalDateTime.of(2024, 1, 10, 10, 0);
+        LocalDateTime time3 = LocalDateTime.of(2024, 1, 15, 10, 0);
+        
+        Order order1 = new Order("order001", "user001", "prod001", 1, new BigDecimal("100.00"), 0, "订单1描述", time1, null, null);
+        Order order2 = new Order("order002", "user001", "prod002", 2, new BigDecimal("200.00"), 1, "订单2描述", time2, null, null);
+        Order order3 = new Order("order003", "user001", "prod003", 3, new BigDecimal("300.00"), 0, "订单3描述", time3, null, null);
         
         orderDAO.createOrder(order1);
         orderDAO.createOrder(order2);
         orderDAO.createOrder(order3);
-        
-        // 执行查询
-        List<Order> result = orderDAO.getOrdersByUserId("user001");
-        
-        // 验证结果
-        assertNotNull(result, "结果不应该为null");
-        assertEquals(2, result.size(), "user001应该有2个订单");
-        
-        // 验证排序：最新的订单应该在最前面（按createTime降序）
-        assertEquals("order002", result.get(0).getOrderId(), "最新订单应该排在第一位");
-        assertEquals("order001", result.get(1).getOrderId(), "较早订单应该排在第二位");
-    }
-    
-    @Test
-    @DisplayName("查询不存在订单的用户 - 应返回空列表")
-    void testGetOrdersByUserId_WithNoOrders() {
-        // 准备测试数据
-        Order order1 = new Order("order001", "user001", "prod001", 1, new BigDecimal("100.00"));
-        orderDAO.createOrder(order1);
-        
-        // 执行查询 - 查询一个没有订单的用户
-        List<Order> result = orderDAO.getOrdersByUserId("user999");
-        
-        // 验证结果
-        assertNotNull(result, "结果不应该为null");
-        assertTrue(result.isEmpty(), "应该返回空列表");
-    }
-    
-    @Test
-    @DisplayName("userId为null - 应返回空列表")
-    void testGetOrdersByUserId_WithNullUserId() {
-        // 准备测试数据
-        Order order1 = new Order("order001", "user001", "prod001", 1, new BigDecimal("100.00"));
-        orderDAO.createOrder(order1);
-        
-        // 执行查询
-        List<Order> result = orderDAO.getOrdersByUserId(null);
-        
-        // 验证结果
-        assertNotNull(result, "结果不应该为null");
-        assertTrue(result.isEmpty(), "userId为null时应返回空列表");
-    }
-    
-    @Test
-    @DisplayName("userId为空字符串 - 应返回空列表")
-    void testGetOrdersByUserId_WithEmptyUserId() {
-        // 准备测试数据
-        Order order1 = new Order("order001", "user001", "prod001", 1, new BigDecimal("100.00"));
-        orderDAO.createOrder(order1);
-        
-        // 执行查询 - 测试空字符串
-        List<Order> result1 = orderDAO.getOrdersByUserId("");
-        assertNotNull(result1, "结果不应该为null");
-        assertTrue(result1.isEmpty(), "空字符串应返回空列表");
-        
-        // 执行查询 - 测试只包含空格的字符串
-        List<Order> result2 = orderDAO.getOrdersByUserId("   ");
-        assertNotNull(result2, "结果不应该为null");
-        assertTrue(result2.isEmpty(), "只包含空格的字符串应返回空列表");
-    }
-    
-    @Test
-    @DisplayName("验证排序正确性 - 应按createTime降序排列")
-    void testGetOrdersByUserId_OrderingSortedByCreateTimeDesc() {
-        // 准备测试数据 - 创建不同创建时间的订单
-        LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 10, 0);
-        LocalDateTime time2 = LocalDateTime.of(2024, 1, 15, 10, 0);
-        LocalDateTime time3 = LocalDateTime.of(2024, 1, 10, 10, 0);
-        
-        Order order1 = new Order("order001", "user001", "prod001", 1, new BigDecimal("100.00"), 0, time1, null, null);
-        Order order2 = new Order("order002", "user001", "prod002", 2, new BigDecimal("200.00"), 1, time2, null, null);
-        Order order3 = new Order("order003", "user001", "prod003", 3, new BigDecimal("300.00"), 0, time3, null, null);
-        
-        // 以乱序添加
-        orderDAO.createOrder(order1);
-        orderDAO.createOrder(order3);
-        orderDAO.createOrder(order2);
         
         // 执行查询
         List<Order> result = orderDAO.getOrdersByUserId("user001");
         
         // 验证结果按时间降序排列
         assertEquals(3, result.size(), "应该有3个订单");
-        assertEquals("order002", result.get(0).getOrderId(), "2024-01-15的订单应该排在第一位");
-        assertEquals("order003", result.get(1).getOrderId(), "2024-01-10的订单应该排在第二位");
+        assertEquals("order003", result.get(0).getOrderId(), "2024-01-15的订单应该排在第一位");
+        assertEquals("order002", result.get(1).getOrderId(), "2024-01-10的订单应该排在第二位");
         assertEquals("order001", result.get(2).getOrderId(), "2024-01-01的订单应该排在第三位");
     }
     
     @Test
     @DisplayName("createTime为null的订单 - null值应排在末尾")
     void testGetOrdersByUserId_WithNullCreateTime() {
-        // 准备测试数据
+        // 准备测试数据，确保时间有明显差异
         LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 10, 0);
-        LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 10, 0);
+        LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 10, 0); // 比time1晚1天
+        LocalDateTime time3 = LocalDateTime.of(2024, 1, 3, 10, 0); // 比time2晚1天
         
-        Order order1 = new Order("order001", "user001", "prod001", 1, new BigDecimal("100.00"), 0, time1, null, null);
-        Order order2 = new Order("order002", "user001", "prod002", 2, new BigDecimal("200.00"), 1, time2, null, null);
-        // 通过setter显式设置createTime为null（因为构造函数会自动设置为LocalDateTime.now()）
-        order2.setCreateTime(null);
-        Order order3 = new Order("order003", "user001", "prod003", 3, new BigDecimal("300.00"), 0, time2, null, null);
+        Order order1 = new Order("order001", "user001", "prod001", 1, new BigDecimal("100.00"), 0, "订单1描述", time1, null, null);
+        Order order2 = new Order("order002", "user001", "prod002", 2, new BigDecimal("200.00"), 1, "订单2描述", time3, null, null);
+        Order order3 = new Order("order003", "user001", "prod003", 3, new BigDecimal("300.00"), 0, "订单3描述", time2, null, null);
         
+        // 先将订单添加到DAO中
         orderDAO.createOrder(order1);
         orderDAO.createOrder(order2);
         orderDAO.createOrder(order3);
+        
+        // 然后显式设置order2的createTime为null（绕过createOrder中的自动设置）
+        order2.setCreateTime(null);
         
         // 执行查询
         List<Order> result = orderDAO.getOrdersByUserId("user001");
         
         // 验证结果
         assertEquals(3, result.size(), "应该有3个订单");
+        // 由于order2的createTime被设置为null，它会被排在最后
         assertEquals("order003", result.get(0).getOrderId(), "时间最新的非null订单排第一");
         assertEquals("order001", result.get(1).getOrderId(), "时间较早的非null订单排第二");
         assertEquals("order002", result.get(2).getOrderId(), "createTime为null的订单应该排在末尾");

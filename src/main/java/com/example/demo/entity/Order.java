@@ -25,6 +25,9 @@ public class Order {
     // 订单状态: 0-待支付, 1-已支付, 2-已发货, 3-已完成, 4-已取消
     private Integer status;
     
+    // 订单描述
+    private String description;
+    
     // 创建时间
     private LocalDateTime createTime;
     
@@ -42,7 +45,7 @@ public class Order {
 
     // 全参数构造函数
     public Order(String orderId, String userId, String productId, Integer quantity, 
-                 BigDecimal totalAmount, Integer status, LocalDateTime createTime, 
+                 BigDecimal totalAmount, Integer status, String description, LocalDateTime createTime, 
                  LocalDateTime payTime, LocalDateTime updateTime) {
         this.orderId = orderId;
         this.userId = userId;
@@ -50,6 +53,7 @@ public class Order {
         this.quantity = quantity;
         this.totalAmount = totalAmount;
         this.status = status != null ? status : 0;  // 默认待支付
+        this.description = description;
         this.createTime = createTime != null ? createTime : LocalDateTime.now();
         this.payTime = payTime;
         this.updateTime = updateTime;
@@ -57,7 +61,7 @@ public class Order {
 
     // 基础字段构造函数（自动设置创建时间和默认状态）
     public Order(String orderId, String userId, String productId, Integer quantity, BigDecimal totalAmount) {
-        this(orderId, userId, productId, quantity, totalAmount, 0, null, null, null);
+        this(orderId, userId, productId, quantity, totalAmount, 0, null, null, null, null);
     }
 
     public String getOrderId() {
@@ -108,6 +112,14 @@ public class Order {
         this.status = status;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public LocalDateTime getCreateTime() {
         return createTime;
     }
@@ -141,6 +153,7 @@ public class Order {
                 ", quantity=" + quantity +
                 ", totalAmount=" + totalAmount +
                 ", status=" + status +
+                ", description='" + description + '\'' +
                 ", createTime=" + createTime +
                 ", payTime=" + payTime +
                 ", updateTime=" + updateTime +

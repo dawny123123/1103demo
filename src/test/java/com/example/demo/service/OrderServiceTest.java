@@ -23,18 +23,15 @@ import static org.mockito.Mockito.*;
  */
 class OrderServiceTest {
 
-    // 创建一个自定义的OrderService，用于注入mock的OrderDAO
-    private OrderService orderService;
-    
     @Mock
     private OrderDAO orderDAO;
+
+    @InjectMocks
+    private OrderService orderService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        
-        // 创建OrderService实例并注入mock的OrderDAO
-        orderService = new OrderService(orderDAO);
     }
 
     /**
@@ -43,7 +40,8 @@ class OrderServiceTest {
     @Test
     void testCreateOrder_ValidOrder_ReturnsTrue() {
         // 准备测试数据
-        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("99.99"));
+        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("318.00"));
+        order.setDescription("测试订单描述");
         
         // 配置mock行为
         when(orderDAO.createOrder(order)).thenReturn(true);
@@ -64,7 +62,8 @@ class OrderServiceTest {
     @Test
     void testCreateOrder_QuantityLessThanOrEqualToZero_ThrowsException() {
         // 准备测试数据 - 数量为0
-        Order order = new Order("12345", "user123", "product456", 0, new BigDecimal("99.99"));
+        Order order = new Order("12345", "user123", "product456", 0, new BigDecimal("0.00"));
+        order.setDescription("测试订单描述");
         
         // 执行测试并验证异常
         IllegalArgumentException exception = assertThrows(
@@ -86,7 +85,8 @@ class OrderServiceTest {
     void testGetOrder_WhenOrderExists_ShouldReturnOrder() {
         // Given
         String orderId = "12345";
-        Order expectedOrder = new Order(orderId, "user123", "product456", 2, new BigDecimal("99.99"));
+        Order expectedOrder = new Order(orderId, "user123", "product456", 2, new BigDecimal("318.00"));
+        expectedOrder.setDescription("测试订单描述");
 
         when(orderDAO.getOrder(orderId)).thenReturn(expectedOrder);
 
@@ -96,7 +96,8 @@ class OrderServiceTest {
         // Then
         assertNotNull(actualOrder);
         assertEquals(orderId, actualOrder.getOrderId());
-        assertEquals(new BigDecimal("99.99"), actualOrder.getTotalAmount());
+        assertEquals(new BigDecimal("318.00"), actualOrder.getTotalAmount());
+        assertEquals("测试订单描述", actualOrder.getDescription());
         verify(orderDAO, times(1)).getOrder(orderId);
     }
 
@@ -106,8 +107,9 @@ class OrderServiceTest {
     @Test
     void testUpdateOrder_ValidOrder_ReturnsTrue() {
         // 准备测试数据
-        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("99.99"));
+        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("318.00"));
         order.setStatus(2); // 设置为已发货状态
+        order.setDescription("测试订单描述");
         
         // 配置mock行为
         when(orderDAO.updateOrder(order)).thenReturn(true);
@@ -133,8 +135,8 @@ class OrderServiceTest {
         LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 10, 0);
         
-        Order order1 = new Order("order001", userId, "prod001", 1, new BigDecimal("100.00"), 0, time1, null, null);
-        Order order2 = new Order("order002", userId, "prod002", 2, new BigDecimal("200.00"), 1, time2, null, null);
+        Order order1 = new Order("order001", userId, "prod001", 1, new BigDecimal("159.00"), 0, "订单1描述", time1, null, null);
+        Order order2 = new Order("order002", userId, "prod002", 2, new BigDecimal("318.00"), 1, "订单2描述", time2, null, null);
         List<Order> expectedOrders = Arrays.asList(order2, order1); // 按时间降序
         
         // 配置mock行为
@@ -147,7 +149,11 @@ class OrderServiceTest {
         assertNotNull(result, "结果不应该为null");
         assertEquals(2, result.size(), "应该返回2个订单");
         assertEquals("order002", result.get(0).getOrderId(), "第一个订单应该是order002");
+        assertEquals(new BigDecimal("318.00"), result.get(0).getTotalAmount(), "第一个订单的金额应该是318.00");
+        assertEquals("订单2描述", result.get(0).getDescription(), "第一个订单的描述应该是'订单2描述'");
         assertEquals("order001", result.get(1).getOrderId(), "第二个订单应该是order001");
+        assertEquals(new BigDecimal("159.00"), result.get(1).getTotalAmount(), "第二个订单的金额应该是159.00");
+        assertEquals("订单1描述", result.get(1).getDescription(), "第二个订单的描述应该是'订单1描述'");
         
         // 验证方法调用
         verify(orderDAO, times(1)).getOrdersByUserId(userId);
@@ -218,5 +224,61 @@ class OrderServiceTest {
         
         // 验证方法调用
         verify(orderDAO, times(1)).getOrdersByUserId(userId);
+    }
+
+    /**
+     * 测试总金额自动计算功能 - 数量为1
+     */
+    @Test
+    @DisplayName("总金额自动计算 - 数量为1")
+    void testTotalAmountCalculation_QuantityOne() {
+        // 准备测试数据
+        Order order = new Order("order001", "user001", "prod001", 1, new BigDecimal("159.00"));
+        order.setDescription("测试订单");
+        
+        // 验证总金额是否正确计算
+        assertEquals(new BigDecimal("159.00"), order.getTotalAmount(), "数量为1时，总金额应为159.00");
+    }
+
+    /**
+     * 测试总金额自动计算功能 - 数量为3
+     */
+    @Test
+    @DisplayName("总金额自动计算 - 数量为3")
+    void testTotalAmountCalculation_QuantityThree() {
+        // 准备测试数据
+        Order order = new Order("order002", "user001", "prod001", 3, new BigDecimal("477.00"));
+        order.setDescription("测试订单");
+        
+        // 验证总金额是否正确计算
+        assertEquals(new BigDecimal("477.00"), order.getTotalAmount(), "数量为3时，总金额应为477.00");
+    }
+
+    /**
+     * 测试总金额自动计算功能 - 数量为5
+     */
+    @Test
+    @DisplayName("总金额自动计算 - 数量为5")
+    void testTotalAmountCalculation_QuantityFive() {
+        // 准备测试数据
+        Order order = new Order("order003", "user001", "prod001", 5, new BigDecimal("795.00"));
+        order.setDescription("测试订单");
+        
+        // 验证总金额是否正确计算
+        assertEquals(new BigDecimal("795.00"), order.getTotalAmount(), "数量为5时，总金额应为795.00");
+    }
+
+    /**
+     * 测试总金额自动计算功能 - 数量为10
+     */
+    @Test
+    @DisplayName("总金额自动计算 - 数量为10")
+    void testTotalAmountCalculation_QuantityTen() {
+        // 准备测试数据
+        Order order = new Order("order004", "user001", "prod001", 10, new BigDecimal("1590.00"));
+        order.setDescription("测试订单");
+        
+        // 验证总金额是否正确计算
+        assertEquals(new BigDecimal("1590.00"), order.getTotalAmount(), "数量为10时，总金额应为1590.00");
     }
 }

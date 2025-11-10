@@ -15,8 +15,9 @@ function App() {
     userId: '',
     productId: '',
     quantity: 1,
-    totalAmount: 0,
+    totalAmount: 159, // 默认数量为1，金额为159
     status: 0,
+    description: ''
   });
 
   // 检查后端连接状态
@@ -60,10 +61,18 @@ function App() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
+    let newFormData = {
       ...formData,
       [name]: name === 'quantity' || name === 'status' ? parseInt(value) : value,
-    });
+    };
+    
+    // 如果是数量字段变化，自动计算总金额
+    if (name === 'quantity') {
+      const quantity = parseInt(value) || 0;
+      newFormData.totalAmount = quantity * 159;
+    }
+    
+    setFormData(newFormData);
   };
 
   const handleCreateOrder = async (e) => {
@@ -77,8 +86,9 @@ function App() {
           userId: '',
           productId: '',
           quantity: 1,
-          totalAmount: 0,
+          totalAmount: 159, // 默认数量为1，金额为159
           status: 0,
+          description: ''
         });
         // 创建订单后刷新列表
         if (searchUserId) {
@@ -102,8 +112,13 @@ function App() {
     try {
       const response = await orderService.getOrdersByUserId(searchUserId);
       if (response.data.success) {
-        setOrders(response.data.data);
+        // 确保数据是数组
+        setOrders(response.data.data || []);
         showMessage(`找到 ${response.data.count} 个订单`, 'success');
+      } else {
+        // 处理API错误
+        showMessage(response.data.message || '查询失败', 'error');
+        setOrders([]);
       }
     } catch (error) {
       showMessage(error.response?.data?.message || '查询失败', 'error');
@@ -251,7 +266,9 @@ function App() {
                 required
                 min="0"
                 step="0.01"
+                readOnly // 设置为只读，因为金额是自动计算的
               />
+              <div className="form-hint">金额根据数量自动计算 (数量 × 159元)</div>
             </div>
             <div className="form-group">
               <label>状态</label>
@@ -269,6 +286,20 @@ function App() {
             </div>
           </div>
           
+          {/* 添加描述字段输入 */}
+          <div className="form-row">
+            <div className="form-group full-width">
+              <label>订单描述</label>
+              <input
+                type="text"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="请输入订单描述..."
+              />
+            </div>
+          </div>
+          
           <div className="button-group">
             <button type="submit" className="btn btn-primary">
               创建订单
@@ -281,8 +312,9 @@ function App() {
                 userId: '',
                 productId: '',
                 quantity: 1,
-                totalAmount: 0,
+                totalAmount: 159, // 默认数量为1，金额为159
                 status: 0,
+                description: ''
               })}
             >
               重置
@@ -319,6 +351,7 @@ function App() {
                   <th>数量</th>
                   <th>总金额</th>
                   <th>状态</th>
+                  <th>描述</th>
                   <th>创建时间</th>
                   <th>支付时间</th>
                   <th>操作</th>
@@ -337,6 +370,7 @@ function App() {
                         {getStatusText(order.status)}
                       </span>
                     </td>
+                    <td>{order.description || '-'}</td>
                     <td>{formatDateTime(order.createTime)}</td>
                     <td>{formatDateTime(order.payTime)}</td>
                     <td>
