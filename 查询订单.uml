@@ -1,0 +1,68 @@
+@startuml
+actor 用户 as user
+participant "前端界面" as frontend
+participant "OrderService.js" as orderService
+participant "OrderController" as controller
+participant "OrderService" as service
+participant "OrderDAO" as dao
+database "SQLite数据库" as database
+
+== 初始化阶段 ==
+user -> frontend : 访问订单管理系统
+frontend -> orderService : 健康检查请求
+orderService -> controller : GET /api/orders/health
+controller --> orderService : 健康检查响应
+orderService --> frontend : 返回健康状态
+
+== 查询所有订单流程 ==
+user -> frontend : 点击"加载所有订单"
+frontend -> orderService : getAllOrders()
+orderService -> controller : GET /api/orders
+controller -> service : getAllOrders()
+service -> dao : getAllOrders()
+dao -> dao : 从内存Map排序筛选
+dao --> service : 返回订单列表
+service --> controller : 返回订单列表
+controller -> controller : 封装响应数据
+controller --> orderService : 返回JSON响应
+orderService --> frontend : 返回订单数据
+frontend -> frontend : 渲染订单列表
+
+== 按用户ID查询订单流程 ==
+user -> frontend : 输入用户ID并查询
+frontend -> orderService : getOrdersByUserId(userId)
+orderService -> controller : GET /api/orders/user/{userId}
+controller -> service : getOrdersByUserId(userId)
+service -> service : 验证用户ID参数
+service -> dao : getOrdersByUserId(userId)
+dao -> dao : 从内存Map按userId筛选
+dao --> service : 返回筛选结果
+service --> controller : 返回筛选订单列表
+controller -> controller : 封装响应数据
+controller --> orderService : 返回JSON响应
+orderService --> frontend : 返回筛选数据
+frontend -> frontend : 更新订单列表显示
+
+== 创建订单流程 ==
+user -> frontend : 填写订单信息并提交
+frontend -> orderService : createOrder(orderData)
+orderService -> controller : POST /api/orders
+controller -> controller : 解析订单数据
+controller -> service : createOrder(order)
+service -> service : 验证订单数据
+service -> dao : createOrder(order)
+dao -> dao : 保存到内存Map
+dao -> database : saveToDatabase()
+database --> dao : 保存结果
+dao --> service : 返回创建结果
+service --> controller : 返回创建结果
+controller -> controller : 封装响应数据
+controller --> orderService : 返回JSON响应
+orderService --> frontend : 返回创建结果
+frontend -> frontend : 显示创建成功提示\n并刷新订单列表
+
+== 数据库同步机制 ==
+note right of dao : 应用启动时自动调用\nloadFromDatabase()\n将数据加载到内存
+note right of dao : 每次数据变更时\n自动调用saveToDatabase()\n保持数据持久化
+
+@enduml

@@ -1,0 +1,9 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+demo,com.example.demo.dao,DBUtil,6,0,0,0,2,0,2,0,2,0
+demo,com.example.demo.dao,OrderDAO,351,99,25,9,86,24,18,11,4,8
+demo,com.example.demo.service,OrderService,0,108,4,16,0,23,4,14,0,8
+demo,com.example.demo.controller,OrderController,360,0,8,0,78,0,12,0,8,0
+demo,com.example.demo.entity,Order,1,201,1,3,0,49,1,25,0,24
+demo,com.example.demo.config,WebConfig,8,0,0,0,2,0,2,0,2,0
+demo,com.example.demo.config,WebConfig.new WebMvcConfigurer() {...},50,0,0,0,7,0,2,0,2,0
+demo,com.example.demo,App,18,0,0,0,7,0,3,0,3,0
