@@ -3,3 +3,4 @@ com/example/demo/service/ai_test/AIOrderServiceTest.class
 com/example/demo/AppTest.class
 com/example/demo/dao/OrderDAOTest.class
 com/example/demo/service/OrderServiceTest.class
+com/example/demo/controller/OrderControllerIT.class

@@ -9,19 +9,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * Web配置类 - 支持前端跨域访问
  */
 @Configuration
-<span class="nc" id="L12">public class WebConfig {</span>
+<span class="fc" id="L12">public class WebConfig {</span>
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
-<span class="nc" id="L16">        return new WebMvcConfigurer() {</span>
+<span class="fc" id="L16">        return new WebMvcConfigurer() {</span>
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-<span class="nc" id="L19">                registry.addMapping(&quot;/api/**&quot;)</span>
-<span class="nc" id="L20">                        .allowedOrigins(&quot;*&quot;)</span>
-<span class="nc" id="L21">                        .allowedMethods(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;)</span>
-<span class="nc" id="L22">                        .allowedHeaders(&quot;*&quot;)</span>
-<span class="nc" id="L23">                        .maxAge(3600);</span>
-<span class="nc" id="L24">            }</span>
+<span class="fc" id="L19">                registry.addMapping(&quot;/api/**&quot;)</span>
+<span class="fc" id="L20">                        .allowedOrigins(&quot;*&quot;)</span>
+<span class="fc" id="L21">                        .allowedMethods(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;)</span>
+<span class="fc" id="L22">                        .allowedHeaders(&quot;*&quot;)</span>
+<span class="fc" id="L23">                        .maxAge(3600);</span>
+<span class="fc" id="L24">            }</span>
         };
     }
 }
