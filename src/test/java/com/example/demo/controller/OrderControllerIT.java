@@ -34,12 +34,13 @@ class OrderControllerIT {
      */
     @Test
     void testCreateOrder_ValidOrder_ReturnsSuccess() {
-        // 创建测试订单对象
+        // 创建测试订单对象 - 灵码专属版: 2个LIC * 159 = 318
         Order order = new Order();
-        order.setOrderId("IT-" + System.currentTimeMillis());
-        order.setUserId("user-it-" + System.currentTimeMillis());
-        order.setProductId("product-it-" + System.currentTimeMillis());
-        order.setQuantity(2);
+        order.setCid("IT-" + System.currentTimeMillis());
+        order.setCustomerName("客户IT-" + System.currentTimeMillis());
+        order.setProductVersion("LINGMA_EXCLUSIVE");
+        order.setDevScale(20);
+        order.setPurchasedLicCount(2);
         order.setTotalAmount(new BigDecimal("318.00"));
         order.setDescription("集成测试订单");
 
@@ -52,22 +53,23 @@ class OrderControllerIT {
             .statusCode(201)
             .body("success", equalTo(true))
             .body("message", equalTo("订单创建成功"))
-            .body("data.orderId", equalTo(order.getOrderId()))
-            .body("data.userId", equalTo(order.getUserId()))
-            .body("data.productId", equalTo(order.getProductId()));
+            .body("data.cid", equalTo(order.getCid()))
+            .body("data.customerName", equalTo(order.getCustomerName()))
+            .body("data.productVersion", equalTo(order.getProductVersion()));
     }
 
     /**
-     * 测试创建订单接口 - 数量为0
+     * 测试创建订单接口 - 已购LIC数为0
      */
     @Test
     void testCreateOrder_ZeroQuantity_ReturnsBadRequest() {
         // 创建测试订单对象
         Order order = new Order();
-        order.setOrderId("IT-002");
-        order.setUserId("user-it-002");
-        order.setProductId("product-it-002");
-        order.setQuantity(0); // 数量为0
+        order.setCid("IT-002");
+        order.setCustomerName("客户IT-002");
+        order.setProductVersion("LINGMA_EXCLUSIVE");
+        order.setDevScale(10);
+        order.setPurchasedLicCount(0); // 已购LIC数为0
         order.setTotalAmount(new BigDecimal("0.00"));
         order.setDescription("集成测试订单");
 
@@ -79,7 +81,7 @@ class OrderControllerIT {
         .then()
             .statusCode(400)
             .body("success", equalTo(false))
-            .body("message", containsString("购买数量必须大于0"));
+            .body("message", containsString("已购LIC数必须大于0"));
     }
 
     /**
@@ -89,10 +91,11 @@ class OrderControllerIT {
     void testCreateOrder_NegativeAmount_ReturnsBadRequest() {
         // 创建测试订单对象
         Order order = new Order();
-        order.setOrderId("IT-003");
-        order.setUserId("user-it-003");
-        order.setProductId("product-it-003");
-        order.setQuantity(2);
+        order.setCid("IT-003");
+        order.setCustomerName("客户IT-003");
+        order.setProductVersion("LINGMA_EXCLUSIVE");
+        order.setDevScale(20);
+        order.setPurchasedLicCount(2);
         order.setTotalAmount(new BigDecimal("-100.00")); // 负数金额
         order.setDescription("集成测试订单");
 
@@ -126,16 +129,17 @@ class OrderControllerIT {
      */
     @Test
     void testGetOrder_ValidOrderId_ReturnsOrder() {
-        String orderId = "IT-" + System.currentTimeMillis();
-        String userId = "user-it-" + System.currentTimeMillis();
-        String productId = "product-it-" + System.currentTimeMillis();
+        String cid = "IT-" + System.currentTimeMillis();
+        String customerName = "客户IT-" + System.currentTimeMillis();
+        String productVersion = "LINGMA_EXCLUSIVE";
         
-        // 先创建一个订单
+        // 先创建一个订单 - 灵码专属版: 1个LIC * 159 = 159
         Order order = new Order();
-        order.setOrderId(orderId);
-        order.setUserId(userId);
-        order.setProductId(productId);
-        order.setQuantity(1);
+        order.setCid(cid);
+        order.setCustomerName(customerName);
+        order.setProductVersion(productVersion);
+        order.setDevScale(10);
+        order.setPurchasedLicCount(1);
         order.setTotalAmount(new BigDecimal("159.00"));
         order.setDescription("集成测试订单");
 
@@ -151,12 +155,12 @@ class OrderControllerIT {
         // 获取订单详情
         given()
         .when()
-            .get("/api/orders/" + orderId)
+            .get("/api/orders/" + cid)
         .then()
             .statusCode(200)
             .body("success", equalTo(true))
-            .body("data.orderId", equalTo(orderId))
-            .body("data.userId", equalTo(userId));
+            .body("data.cid", equalTo(cid))
+            .body("data.customerName", equalTo(customerName));
     }
 
     /**

@@ -42,8 +42,8 @@ class AIOrderServiceTest {
     @Test
     @DisplayName("TC001: 测试创建有效订单")
     void testCreateOrder_ValidOrder_ReturnsTrue() {
-        // Arrange
-        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("318.00"));
+        // Arrange - 灵码专属版: 2个LIC * 159 = 318元
+        Order order = new Order("12345", "客户A", "LINGMA_EXCLUSIVE", 10, 2, new BigDecimal("318.00"));
         
         // 配置mock行为
         when(orderDAO.createOrder(order)).thenReturn(true);
@@ -57,23 +57,23 @@ class AIOrderServiceTest {
     }
 
     /**
-     * 测试创建数量<=0的订单，应该抛出异常
+     * 测试创建已购LIC数<=0的订单，应该抛出异常
      */
     @Test
-    @DisplayName("TC002: 测试创建数量<=0的订单，应该抛出异常")
+    @DisplayName("TC002: 测试创建已购LIC数<=0的订单，应该抛出异常")
     void testCreateOrder_QuantityLessThanOrEqualToZero_ThrowsException() {
         // Arrange
-        Order order = new Order("12345", "user123", "product456", 0, new BigDecimal("0.00"));
+        Order order = new Order("12345", "客户A", "LINGMA_EXCLUSIVE", 10, 0, new BigDecimal("0.00"));
         
         // Act & Assert
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> orderService.createOrder(order),
-            "创建数量<=0的订单应抛出IllegalArgumentException"
+            "创建已购LIC数<=0的订单应抛出IllegalArgumentException"
         );
         
         // 验证异常信息
-        assertEquals("购买数量必须大于0", exception.getMessage(), "异常消息应为'购买数量必须大于0'");
+        assertEquals("已购LIC数必须大于0", exception.getMessage(), "异常消息应为'已购LIC数必须大于0'");
         
         // 验证createOrder方法从未被调用
         verify(orderDAO, never()).createOrder(order);
@@ -86,7 +86,7 @@ class AIOrderServiceTest {
     @DisplayName("TC003: 测试创建金额<=0的订单，应该抛出异常")
     void testCreateOrder_TotalAmountLessThanOrEqualToZero_ThrowsException() {
         // Arrange
-        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("0.00"));
+        Order order = new Order("12345", "客户A", "LINGMA_EXCLUSIVE", 10, 2, new BigDecimal("0.00"));
         
         // Act & Assert
         IllegalArgumentException exception = assertThrows(
@@ -109,19 +109,19 @@ class AIOrderServiceTest {
     @DisplayName("TC004: 测试获取存在的订单")
     void testGetOrder_WhenOrderExists_ShouldReturnOrder() {
         // Arrange
-        String orderId = "12345";
-        Order expectedOrder = new Order(orderId, "user123", "product456", 2, new BigDecimal("318.00"));
+        String cid = "12345";
+        Order expectedOrder = new Order(cid, "客户A", "LINGMA_EXCLUSIVE", 10, 2, new BigDecimal("318.00"));
 
-        when(orderDAO.getOrder(orderId)).thenReturn(expectedOrder);
+        when(orderDAO.getOrder(cid)).thenReturn(expectedOrder);
 
         // Act
-        Order actualOrder = orderService.getOrder(orderId);
+        Order actualOrder = orderService.getOrder(cid);
 
         // Assert
         assertNotNull(actualOrder, "获取存在的订单应返回非null对象");
-        assertEquals(orderId, actualOrder.getOrderId(), "订单ID应匹配");
+        assertEquals(cid, actualOrder.getCid(), "CID应匹配");
         assertEquals(new BigDecimal("318.00"), actualOrder.getTotalAmount(), "订单金额应匹配");
-        verify(orderDAO, times(1)).getOrder(orderId);
+        verify(orderDAO, times(1)).getOrder(cid);
     }
 
     /**
@@ -131,7 +131,7 @@ class AIOrderServiceTest {
     @DisplayName("TC005: 测试更新订单")
     void testUpdateOrder_ValidOrder_ReturnsTrue() {
         // Arrange
-        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("318.00"));
+        Order order = new Order("12345", "客户A", "LINGMA_EXCLUSIVE", 10, 2, new BigDecimal("318.00"));
         order.setStatus(2); // 设置为已发货状态
         
         // 配置mock行为
@@ -152,10 +152,10 @@ class AIOrderServiceTest {
     @DisplayName("TC006: 测试更新已完成订单应返回false")
     void testUpdateOrder_CompletedOrderCannotBeModified_ReturnsFalse() {
         // Arrange
-        Order order = new Order("12345", "user123", "product456", 2, new BigDecimal("318.00"));
+        Order order = new Order("12345", "客户A", "LINGMA_EXCLUSIVE", 10, 2, new BigDecimal("318.00"));
         order.setStatus(3); // 设置为已完成状态
         
-        Order existingOrder = new Order("12345", "user123", "product456", 2, new BigDecimal("318.00"));
+        Order existingOrder = new Order("12345", "客户A", "LINGMA_EXCLUSIVE", 10, 2, new BigDecimal("318.00"));
         existingOrder.setStatus(3); // 数据库中也是已完成状态
         
         // 配置mock行为
@@ -176,21 +176,21 @@ class AIOrderServiceTest {
     @DisplayName("TC007: 测试删除订单")
     void testDeleteOrder_ValidOrder_ReturnsTrue() {
         // Arrange
-        String orderId = "12345";
-        Order order = new Order(orderId, "user123", "product456", 2, new BigDecimal("318.00"));
+        String cid = "12345";
+        Order order = new Order(cid, "客户A", "LINGMA_EXCLUSIVE", 10, 2, new BigDecimal("318.00"));
         order.setStatus(0); // 待支付状态
         
         // 配置mock行为
-        when(orderDAO.getOrder(orderId)).thenReturn(order);
-        when(orderDAO.deleteOrder(orderId)).thenReturn(true);
+        when(orderDAO.getOrder(cid)).thenReturn(order);
+        when(orderDAO.deleteOrder(cid)).thenReturn(true);
         
         // Act
-        boolean result = orderService.deleteOrder(orderId);
+        boolean result = orderService.deleteOrder(cid);
         
         // Assert
         assertTrue(result, "删除待支付订单应返回true");
-        verify(orderDAO, times(1)).getOrder(orderId);
-        verify(orderDAO, times(1)).deleteOrder(orderId);
+        verify(orderDAO, times(1)).getOrder(cid);
+        verify(orderDAO, times(1)).deleteOrder(cid);
     }
 
     /**
@@ -200,20 +200,20 @@ class AIOrderServiceTest {
     @DisplayName("TC008: 测试删除已支付订单应返回false")
     void testDeleteOrder_PaidOrderCannotBeDeleted_ReturnsFalse() {
         // Arrange
-        String orderId = "12345";
-        Order order = new Order(orderId, "user123", "product456", 2, new BigDecimal("318.00"));
+        String cid = "12345";
+        Order order = new Order(cid, "客户A", "LINGMA_EXCLUSIVE", 10, 2, new BigDecimal("318.00"));
         order.setStatus(1); // 已支付状态
         
         // 配置mock行为
-        when(orderDAO.getOrder(orderId)).thenReturn(order);
+        when(orderDAO.getOrder(cid)).thenReturn(order);
         
         // Act
-        boolean result = orderService.deleteOrder(orderId);
+        boolean result = orderService.deleteOrder(cid);
         
         // Assert
         assertFalse(result, "删除已支付订单应返回false");
-        verify(orderDAO, times(1)).getOrder(orderId);
-        verify(orderDAO, never()).deleteOrder(orderId);
+        verify(orderDAO, times(1)).getOrder(cid);
+        verify(orderDAO, never()).deleteOrder(cid);
     }
 
     /**
@@ -223,30 +223,30 @@ class AIOrderServiceTest {
     @DisplayName("TC009: 测试按用户ID查询订单列表 - 正常查询")
     void testGetOrdersByUserId_ValidUserId_ReturnsOrderList() {
         // Arrange
-        String userId = "user001";
+        String customerName = "客户A";
         LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 10, 0);
         
-        Order order1 = new Order("order001", userId, "prod001", 1, new BigDecimal("159.00"), 0, null, time1, null, null);
-        Order order2 = new Order("order002", userId, "prod002", 2, new BigDecimal("318.00"), 1, null, time2, null, null);
+        Order order1 = new Order("order001", customerName, "QODER", 10, 1, new BigDecimal("140.00"), 0, null, time1, null, null);
+        Order order2 = new Order("order002", customerName, "LINGMA_EXCLUSIVE", 20, 2, new BigDecimal("318.00"), 1, null, time2, null, null);
         List<Order> expectedOrders = Arrays.asList(order2, order1); // 按时间降序
         
         // 配置mock行为
-        when(orderDAO.getOrdersByUserId(userId)).thenReturn(expectedOrders);
+        when(orderDAO.getOrdersByUserId(customerName)).thenReturn(expectedOrders);
         
         // Act
-        List<Order> result = orderService.getOrdersByUserId(userId);
+        List<Order> result = orderService.getOrdersByUserId(customerName);
         
         // Assert
         assertNotNull(result, "结果不应该为null");
         assertEquals(2, result.size(), "应该返回2个订单");
-        assertEquals("order002", result.get(0).getOrderId(), "第一个订单应该是order002");
+        assertEquals("order002", result.get(0).getCid(), "第一个订单应该是order002");
         assertEquals(new BigDecimal("318.00"), result.get(0).getTotalAmount(), "第一个订单的金额应该是318.00");
-        assertEquals("order001", result.get(1).getOrderId(), "第二个订单应该是order001");
-        assertEquals(new BigDecimal("159.00"), result.get(1).getTotalAmount(), "第二个订单的金额应该是159.00");
+        assertEquals("order001", result.get(1).getCid(), "第二个订单应该是order001");
+        assertEquals(new BigDecimal("140.00"), result.get(1).getTotalAmount(), "第二个订单的金额应该是140.00");
         
         // 验证方法调用
-        verify(orderDAO, times(1)).getOrdersByUserId(userId);
+        verify(orderDAO, times(1)).getOrdersByUserId(customerName);
     }
 
     /**
@@ -263,7 +263,7 @@ class AIOrderServiceTest {
         );
         
         // 验证异常信息
-        assertEquals("用户ID不能为空", exception.getMessage(), "异常消息应为'用户ID不能为空'");
+        assertEquals("客户名称不能为空", exception.getMessage(), "异常消息应为'客户名称不能为空'");
         
         // 验证DAO方法从未被调用
         verify(orderDAO, never()).getOrdersByUserId(any());
@@ -281,7 +281,7 @@ class AIOrderServiceTest {
             () -> orderService.getOrdersByUserId(""),
             "userId为空字符串时应抛出IllegalArgumentException"
         );
-        assertEquals("用户ID不能为空", exception1.getMessage(), "异常消息应为'用户ID不能为空'");
+        assertEquals("客户名称不能为空", exception1.getMessage(), "异常消息应为'客户名称不能为空'");
         
         // 验证DAO方法从未被调用
         verify(orderDAO, never()).getOrdersByUserId(any());
@@ -299,7 +299,7 @@ class AIOrderServiceTest {
             () -> orderService.getOrdersByUserId("   "),
             "userId为空白字符串时应抛出IllegalArgumentException"
         );
-        assertEquals("用户ID不能为空", exception.getMessage(), "异常消息应为'用户ID不能为空'");
+        assertEquals("客户名称不能为空", exception.getMessage(), "异常消息应为'客户名称不能为空'");
         
         // 验证DAO方法从未被调用
         verify(orderDAO, never()).getOrdersByUserId(any());
@@ -312,21 +312,21 @@ class AIOrderServiceTest {
     @DisplayName("TC013: 测试按用户ID查询订单列表 - 用户无订单")
     void testGetOrdersByUserId_NoOrders_ReturnsEmptyList() {
         // Arrange
-        String userId = "user999";
+        String customerName = "客户Z";
         List<Order> emptyList = new ArrayList<>();
         
         // 配置mock行为
-        when(orderDAO.getOrdersByUserId(userId)).thenReturn(emptyList);
+        when(orderDAO.getOrdersByUserId(customerName)).thenReturn(emptyList);
         
         // Act
-        List<Order> result = orderService.getOrdersByUserId(userId);
+        List<Order> result = orderService.getOrdersByUserId(customerName);
         
         // Assert
         assertNotNull(result, "结果不应该为null");
         assertTrue(result.isEmpty(), "应该返回空列表");
         
         // 验证方法调用
-        verify(orderDAO, times(1)).getOrdersByUserId(userId);
+        verify(orderDAO, times(1)).getOrdersByUserId(customerName);
     }
 
     /**
@@ -339,8 +339,8 @@ class AIOrderServiceTest {
         LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 10, 0);
         
-        Order order1 = new Order("order001", "user001", "prod001", 1, new BigDecimal("159.00"), 0, null, time1, null, null);
-        Order order2 = new Order("order002", "user002", "prod002", 2, new BigDecimal("318.00"), 1, null, time2, null, null);
+        Order order1 = new Order("order001", "客户A", "QODER", 10, 1, new BigDecimal("140.00"), 0, null, time1, null, null);
+        Order order2 = new Order("order002", "客户B", "LINGMA_EXCLUSIVE", 20, 2, new BigDecimal("318.00"), 1, null, time2, null, null);
         List<Order> expectedOrders = Arrays.asList(order2, order1); // 按时间降序
         
         // 配置mock行为
@@ -352,23 +352,23 @@ class AIOrderServiceTest {
         // Assert
         assertNotNull(result, "结果不应该为null");
         assertEquals(2, result.size(), "应该返回2个订单");
-        assertEquals("order002", result.get(0).getOrderId(), "第一个订单应该是order002");
+        assertEquals("order002", result.get(0).getCid(), "第一个订单应该是order002");
         assertEquals(new BigDecimal("318.00"), result.get(0).getTotalAmount(), "第一个订单的金额应该是318.00");
-        assertEquals("order001", result.get(1).getOrderId(), "第二个订单应该是order001");
-        assertEquals(new BigDecimal("159.00"), result.get(1).getTotalAmount(), "第二个订单的金额应该是159.00");
+        assertEquals("order001", result.get(1).getCid(), "第二个订单应该是order001");
+        assertEquals(new BigDecimal("140.00"), result.get(1).getTotalAmount(), "第二个订单的金额应该是140.00");
         
         // 验证方法调用
         verify(orderDAO, times(1)).getAllOrders();
     }
 
     /**
-     * 测试总金额自动计算功能 - 数量为1
+     * 测试总金额自动计算功能 - 灵码专属版1个LIC
      */
     @Test
-    @DisplayName("TC015: 测试总金额自动计算功能 - 数量为1")
+    @DisplayName("TC015: 测试总金额自动计算功能 - 灵码专属版1个LIC")
     void testTotalAmountCalculation_QuantityOne() {
-        // Arrange
-        Order order = new Order("order001", "user001", "prod001", 1, new BigDecimal("159.00"));
+        // Arrange - 灵码专属版: 1个LIC * 159 = 159
+        Order order = new Order("order001", "客户A", "LINGMA_EXCLUSIVE", 10, 1, new BigDecimal("159.00"));
         
         // 配置mock行为
         when(orderDAO.createOrder(order)).thenReturn(true);
@@ -378,18 +378,18 @@ class AIOrderServiceTest {
         
         // Assert
         assertTrue(result, "订单创建应成功");
-        assertEquals(new BigDecimal("159.00"), order.getTotalAmount(), "数量为1时，总金额应为159.00");
+        assertEquals(new BigDecimal("159.00"), order.getTotalAmount(), "灵码专属版 1个LIC，总金额应为159.00");
         verify(orderDAO, times(1)).createOrder(order);
     }
 
     /**
-     * 测试总金额自动计算功能 - 数量为3
+     * 测试总金额自动计算功能 - 灵码专属版3个LIC
      */
     @Test
-    @DisplayName("TC016: 测试总金额自动计算功能 - 数量为3")
+    @DisplayName("TC016: 测试总金额自动计算功能 - 灵码专属版3个LIC")
     void testTotalAmountCalculation_QuantityThree() {
-        // Arrange
-        Order order = new Order("order002", "user001", "prod001", 3, new BigDecimal("477.00"));
+        // Arrange - 灵码专属版: 3个LIC * 159 = 477
+        Order order = new Order("order002", "客户A", "LINGMA_EXCLUSIVE", 30, 3, new BigDecimal("477.00"));
         
         // 配置mock行为
         when(orderDAO.createOrder(order)).thenReturn(true);
@@ -399,18 +399,18 @@ class AIOrderServiceTest {
         
         // Assert
         assertTrue(result, "订单创建应成功");
-        assertEquals(new BigDecimal("477.00"), order.getTotalAmount(), "数量为3时，总金额应为477.00");
+        assertEquals(new BigDecimal("477.00"), order.getTotalAmount(), "灵码专属版 3个LIC，总金额应为477.00");
         verify(orderDAO, times(1)).createOrder(order);
     }
 
     /**
-     * 测试总金额自动计算功能 - 数量为5
+     * 测试总金额自动计算功能 - 灵码企业版5个LIC
      */
     @Test
-    @DisplayName("TC017: 测试总金额自动计算功能 - 数量为5")
+    @DisplayName("TC017: 测试总金额自动计算功能 - 灵码企业版5个LIC")
     void testTotalAmountCalculation_QuantityFive() {
-        // Arrange
-        Order order = new Order("order003", "user001", "prod001", 5, new BigDecimal("795.00"));
+        // Arrange - 灵码企业版: 5个LIC * 79 = 395
+        Order order = new Order("order003", "客户A", "LINGMA_ENTERPRISE", 50, 5, new BigDecimal("395.00"));
         
         // 配置mock行为
         when(orderDAO.createOrder(order)).thenReturn(true);
@@ -420,18 +420,18 @@ class AIOrderServiceTest {
         
         // Assert
         assertTrue(result, "订单创建应成功");
-        assertEquals(new BigDecimal("795.00"), order.getTotalAmount(), "数量为5时，总金额应为795.00");
+        assertEquals(new BigDecimal("395.00"), order.getTotalAmount(), "灵码企业版 5个LIC，总金额应为395.00");
         verify(orderDAO, times(1)).createOrder(order);
     }
 
     /**
-     * 测试总金额自动计算功能 - 数量为10
+     * 测试总金额自动计算功能 - Qoder 10个LIC
      */
     @Test
-    @DisplayName("TC018: 测试总金额自动计算功能 - 数量为10")
+    @DisplayName("TC018: 测试总金额自动计算功能 - Qoder 10个LIC")
     void testTotalAmountCalculation_QuantityTen() {
-        // Arrange
-        Order order = new Order("order004", "user001", "prod001", 10, new BigDecimal("1590.00"));
+        // Arrange - Qoder: 10个LIC * 140 = 1400
+        Order order = new Order("order004", "客户A", "QODER", 100, 10, new BigDecimal("1400.00"));
         
         // 配置mock行为
         when(orderDAO.createOrder(order)).thenReturn(true);
@@ -441,7 +441,7 @@ class AIOrderServiceTest {
         
         // Assert
         assertTrue(result, "订单创建应成功");
-        assertEquals(new BigDecimal("1590.00"), order.getTotalAmount(), "数量为10时，总金额应为1590.00");
+        assertEquals(new BigDecimal("1400.00"), order.getTotalAmount(), "Qoder 10个LIC，总金额应为1400.00");
         verify(orderDAO, times(1)).createOrder(order);
     }
 }

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>影响力表单测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>影响力表单测试</h1>
+    
+    <form id="influenceForm">
+        <div class="form-group">
+            <label>ID（可选，留空自动生成）</label>
+            <input type="text" id="id" placeholder="留空将自动生成ID">
+        </div>
+        
+        <div class="form-group">
+            <label>名称 *</label>
+            <input type="text" id="name" required placeholder="例: Qoder产品SA培训">
+        </div>
+        
+        <div class="form-group">
+            <label>类型 *</label>
+            <select id="type" required>
+                <option value="SA_TRAINING">SA培训</option>
+                <option value="LOGO">logo</option>
+                <option value="CASE_STUDY">案例</option>
+                <option value="COMPETITOR_ANALYSIS">竞品分析</option>
+                <option value="DEMO">demo</option>
+                <option value="CONFERENCE_SHARING">大会分享</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>状态 *</label>
+            <select id="status" required>
+                <option value="PLANNED">计划中</option>
+                <option value="IN_PROGRESS">进行中</option>
+                <option value="COMPLETED">已完成</option>
+                <option value="CANCELLED">已取消</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>活动时间 *</label>
+            <input type="datetime-local" id="eventTime" required>
+        </div>
+        
+        <div class="form-group">
+            <label>链接</label>
+            <input type="url" id="link" placeholder="https://example.com">
+        </div>
+        
+        <div class="form-group">
+            <label>备注</label>
+            <textarea id="remark" rows="3" placeholder="请输入备注信息..."></textarea>
+        </div>
+        
+        <button type="submit">创建影响力记录</button>
+        <button type="button" onclick="resetForm()">重置</button>
+    </form>
+    
+    <div id="message"></div>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('influenceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // 生成唯一ID（只在用户未填写时自动生成）
+            const idInput = document.getElementById('id').value.trim();
+            const finalId = idInput || `INF_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+            
+            // 获取datetime-local的值并添加秒
+            const eventTimeValue = document.getElementById('eventTime').value;
+            const eventTime = eventTimeValue ? `${eventTimeValue}:00` : null;
+            
+            const formData = {
+                id: finalId,
+                name: document.getElementById('name').value,
+                type: document.getElementById('type').value,
+                status: document.getElementById('status').value,
+                eventTime: eventTime,
+                link: document.getElementById('link').value,
+                remark: document.getElementById('remark').value,
+                imageUrls: []
+            };
+            
+            console.log('提交的数据：', formData);
+            document.getElementById('result').textContent = '提交的数据：\n' + JSON.stringify(formData, null, 2);
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/influences', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                console.log('服务器响应：', data);
+                
+                const messageDiv = document.getElementById('message');
+                if (data.success) {
+                    messageDiv.className = 'message success';
+                    messageDiv.textContent = '影响力记录创建成功！';
+                    document.getElementById('result').textContent += '\n\n服务器响应：\n' + JSON.stringify(data, null, 2);
+                    resetForm();
+                } else {
+                    messageDiv.className = 'message error';
+                    messageDiv.textContent = '创建失败：' + data.message;
+                    document.getElementById('result').textContent += '\n\n错误响应：\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                console.error('请求失败：', error);
+                const messageDiv = document.getElementById('message');
+                messageDiv.className = 'message error';
+                messageDiv.textContent = '请求失败：' + error.message;
+                document.getElementById('result').textContent += '\n\n错误：' + error.message;
+            }
+        });
+        
+        function resetForm() {
+            document.getElementById('influenceForm').reset();
+            document.getElementById('message').textContent = '';
+        }
+    </script>
+</body>
+</html>

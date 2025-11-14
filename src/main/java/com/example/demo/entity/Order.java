@@ -4,25 +4,28 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 订单实体类
+ * 订单实体类 - 软件许可证订单
  */
 public class Order {
-    // 订单唯一标识
-    private String orderId;
+    // 客户合同ID (Customer ID)
+    private String cid;
     
-    // 用户ID
-    private String userId;
+    // 客户名称
+    private String customerName;
     
-    // 商品ID
-    private String productId;
+    // 产品版本（枚举：QODER/LINGMA_ENTERPRISE/LINGMA_EXCLUSIVE）
+    private String productVersion;
     
-    // 购买数量
-    private Integer quantity;
+    // 研发规模
+    private Integer devScale;
+    
+    // 已购LIC数（用于计算总金额）
+    private Integer purchasedLicCount;
     
     // 订单总金额
     private BigDecimal totalAmount;
     
-    // 订单状态: 0-待支付, 1-已支付, 2-已发货, 3-已完成, 4-已取消
+    // 订单状态: 0-售前, 1-下单, 2-扩容, 3-流失
     private Integer status;
     
     // 订单描述
@@ -39,20 +42,21 @@ public class Order {
 
     // 无参构造函数（用于Jackson反序列化）
     public Order() {
-        this.status = 0;  // 默认待支付
+        this.status = 0;  // 默认售前
         this.createTime = LocalDateTime.now();
     }
 
     // 全参数构造函数
-    public Order(String orderId, String userId, String productId, Integer quantity, 
-                 BigDecimal totalAmount, Integer status, String description, LocalDateTime createTime, 
-                 LocalDateTime payTime, LocalDateTime updateTime) {
-        this.orderId = orderId;
-        this.userId = userId;
-        this.productId = productId;
-        this.quantity = quantity;
+    public Order(String cid, String customerName, String productVersion, Integer devScale, 
+                 Integer purchasedLicCount, BigDecimal totalAmount, Integer status, String description, 
+                 LocalDateTime createTime, LocalDateTime payTime, LocalDateTime updateTime) {
+        this.cid = cid;
+        this.customerName = customerName;
+        this.productVersion = productVersion;
+        this.devScale = devScale;
+        this.purchasedLicCount = purchasedLicCount;
         this.totalAmount = totalAmount;
-        this.status = status != null ? status : 0;  // 默认待支付
+        this.status = status != null ? status : 0;  // 默认售前
         this.description = description;
         this.createTime = createTime != null ? createTime : LocalDateTime.now();
         this.payTime = payTime;
@@ -60,40 +64,49 @@ public class Order {
     }
 
     // 基础字段构造函数（自动设置创建时间和默认状态）
-    public Order(String orderId, String userId, String productId, Integer quantity, BigDecimal totalAmount) {
-        this(orderId, userId, productId, quantity, totalAmount, 0, null, null, null, null);
+    public Order(String cid, String customerName, String productVersion, Integer devScale, 
+                 Integer purchasedLicCount, BigDecimal totalAmount) {
+        this(cid, customerName, productVersion, devScale, purchasedLicCount, totalAmount, 0, null, null, null, null);
     }
 
-    public String getOrderId() {
-        return orderId;
+    public String getCid() {
+        return cid;
     }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public void setCid(String cid) {
+        this.cid = cid;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getCustomerName() {
+        return customerName;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 
-    public String getProductId() {
-        return productId;
+    public String getProductVersion() {
+        return productVersion;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setProductVersion(String productVersion) {
+        this.productVersion = productVersion;
     }
 
-    public Integer getQuantity() {
-        return quantity;
+    public Integer getDevScale() {
+        return devScale;
     }
 
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
+    public void setDevScale(Integer devScale) {
+        this.devScale = devScale;
+    }
+
+    public Integer getPurchasedLicCount() {
+        return purchasedLicCount;
+    }
+
+    public void setPurchasedLicCount(Integer purchasedLicCount) {
+        this.purchasedLicCount = purchasedLicCount;
     }
 
     public BigDecimal getTotalAmount() {
@@ -147,10 +160,11 @@ public class Order {
     @Override
     public String toString() {
         return "Order{" +
-                "orderId='" + orderId + '\'' +
-                ", userId='" + userId + '\'' +
-                ", productId='" + productId + '\'' +
-                ", quantity=" + quantity +
+                "cid='" + cid + '\'' +
+                ", customerName='" + customerName + '\'' +
+                ", productVersion='" + productVersion + '\'' +
+                ", devScale=" + devScale +
+                ", purchasedLicCount=" + purchasedLicCount +
                 ", totalAmount=" + totalAmount +
                 ", status=" + status +
                 ", description='" + description + '\'' +

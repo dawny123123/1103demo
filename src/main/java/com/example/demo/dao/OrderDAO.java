@@ -29,10 +29,11 @@ public class OrderDAO {
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement()) {
             String sql = "CREATE TABLE IF NOT EXISTS order0713(" +
-                "orderId TEXT PRIMARY KEY, " +
-                "userId TEXT, " +
-                "productId TEXT, " +
-                "quantity INTEGER, " +
+                "cid TEXT PRIMARY KEY, " +
+                "customerName TEXT, " +
+                "productVersion TEXT, " +
+                "devScale INTEGER, " +
+                "purchasedLicCount INTEGER, " +
                 "totalAmount TEXT, " +
                 "status INTEGER, " +
                 "description TEXT, " +
@@ -50,24 +51,25 @@ public class OrderDAO {
      */
     public void saveToDatabase() {
         String sql = "INSERT OR REPLACE INTO order0713(" +
-            "orderId, userId, productId, quantity, " +
+            "cid, customerName, productVersion, devScale, purchasedLicCount, " +
             "totalAmount, status, description, createTime, payTime, updateTime) " +
-            "VALUES(?,?,?,?,?,?,?,?,?,?)";
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             for (Order order : orderMap.values()) {
-                pstmt.setString(1, order.getOrderId());
-                pstmt.setString(2, order.getUserId());
-                pstmt.setString(3, order.getProductId());
-                pstmt.setInt(4, order.getQuantity());
-                pstmt.setString(5, order.getTotalAmount().toString());
-                pstmt.setInt(6, order.getStatus());
-                pstmt.setString(7, order.getDescription());
-                pstmt.setString(8, order.getCreateTime() != null ? order.getCreateTime().toString() : null);
-                pstmt.setString(9, order.getPayTime() != null ? order.getPayTime().toString() : null);
-                pstmt.setString(10, order.getUpdateTime() != null ? order.getUpdateTime().toString() : null);
+                pstmt.setString(1, order.getCid());
+                pstmt.setString(2, order.getCustomerName());
+                pstmt.setString(3, order.getProductVersion());
+                pstmt.setInt(4, order.getDevScale());
+                pstmt.setInt(5, order.getPurchasedLicCount());
+                pstmt.setString(6, order.getTotalAmount().toString());
+                pstmt.setInt(7, order.getStatus());
+                pstmt.setString(8, order.getDescription());
+                pstmt.setString(9, order.getCreateTime() != null ? order.getCreateTime().toString() : null);
+                pstmt.setString(10, order.getPayTime() != null ? order.getPayTime().toString() : null);
+                pstmt.setString(11, order.getUpdateTime() != null ? order.getUpdateTime().toString() : null);
                 pstmt.addBatch();
             }
             
@@ -81,7 +83,7 @@ public class OrderDAO {
      * 从数据库加载数据到内存
      */
     public void loadFromDatabase() {
-        String sql = "SELECT orderId, userId, productId, quantity, totalAmount, status, description, createTime, payTime, updateTime FROM order0713";
+        String sql = "SELECT cid, customerName, productVersion, devScale, purchasedLicCount, totalAmount, status, description, createTime, payTime, updateTime FROM order0713";
         
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement();
@@ -137,10 +139,11 @@ public class OrderDAO {
                 }
                 
                 Order order = new Order(
-                    rs.getString("orderId"),
-                    rs.getString("userId"),
-                    rs.getString("productId"),
-                    rs.getInt("quantity"),
+                    rs.getString("cid"),
+                    rs.getString("customerName"),
+                    rs.getString("productVersion"),
+                    rs.getInt("devScale"),
+                    rs.getInt("purchasedLicCount"),
                     new BigDecimal(rs.getString("totalAmount")),
                     rs.getInt("status"),
                     rs.getString("description"),
@@ -148,7 +151,7 @@ public class OrderDAO {
                     payTime,
                     updateTime
                 );
-                orderMap.put(order.getOrderId(), order);
+                orderMap.put(order.getCid(), order);
             }
             System.out.println("从数据库加载了 " + orderMap.size() + " 条订单记录");
         } catch (SQLException e) {
@@ -163,24 +166,24 @@ public class OrderDAO {
      * @return 创建成功返回true，订单已存在返回false
      */
     public boolean createOrder(Order order) {
-        if (orderMap.containsKey(order.getOrderId())) {
+        if (orderMap.containsKey(order.getCid())) {
             return false; // 订单已存在
         }
         // 确保创建时间被设置
         if (order.getCreateTime() == null) {
             order.setCreateTime(LocalDateTime.now());
         }
-        orderMap.put(order.getOrderId(), order);
+        orderMap.put(order.getCid(), order);
         return true;
     }
 
     /**
      * 获取订单
-     * @param orderId 订单ID
+     * @param cid 订单ID
      * @return 返回订单对象，不存在返回null
      */
-    public Order getOrder(String orderId) {
-        return orderMap.get(orderId);
+    public Order getOrder(String cid) {
+        return orderMap.get(cid);
     }
 
     /**
@@ -189,42 +192,42 @@ public class OrderDAO {
      * @return 更新成功返回true，订单不存在返回false
      */
     public boolean updateOrder(Order order) {
-        if (!orderMap.containsKey(order.getOrderId())) {
+        if (!orderMap.containsKey(order.getCid())) {
             return false; // 订单不存在
         }
         // 更新更新时间
         order.setUpdateTime(LocalDateTime.now());
-        orderMap.put(order.getOrderId(), order);
+        orderMap.put(order.getCid(), order);
         return true;
     }
 
     /**
      * 删除订单
-     * @param orderId 订单ID
+     * @param cid 订单ID
      * @return 删除成功返回true，订单不存在返回false
      */
-    public boolean deleteOrder(String orderId) {
-        if (!orderMap.containsKey(orderId)) {
+    public boolean deleteOrder(String cid) {
+        if (!orderMap.containsKey(cid)) {
             return false; // 订单不存在
         }
-        orderMap.remove(orderId);
+        orderMap.remove(cid);
         return true;
     }
 
     /**
-     * 根据用户ID查询订单列表
-     * @param userId 用户ID
-     * @return 返回该用户的所有订单列表，按创建时间降序排列；如果userId为null或空字符串，返回空列表
+     * 根据客户名称查询订单列表
+     * @param customerName 客户名称
+     * @return 返回该用户的所有订单列表，按创建时间降序排列；如果customerName为null或空字符串，返回空列表
      */
-    public List<Order> getOrdersByUserId(String userId) {
-        // 参数校验：userId为null或空字符串时，返回空列表
-        if (userId == null || userId.trim().isEmpty()) {
+    public List<Order> getOrdersByUserId(String customerName) {
+        // 参数校验：customerName为null或空字符串时，返回空列表
+        if (customerName == null || customerName.trim().isEmpty()) {
             return new ArrayList<>();
         }
 
         // 使用流式操作过滤、排序并收集结果
         return orderMap.values().stream()
-            .filter(order -> userId.equals(order.getUserId()))  // 严格匹配用户ID
+            .filter(order -> customerName.equals(order.getCustomerName()))  // 严格匹配客户名称
             .sorted(Comparator.comparing(
                 Order::getCreateTime,
                 Comparator.nullsLast(Comparator.reverseOrder())

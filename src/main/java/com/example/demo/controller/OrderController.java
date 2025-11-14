@@ -77,10 +77,10 @@ public class OrderController {
     /**
      * 获取订单详情
      */
-    @GetMapping("/{orderId}")
-    public ResponseEntity<Map<String, Object>> getOrder(@PathVariable String orderId) {
+    @GetMapping("/{cid}")
+    public ResponseEntity<Map<String, Object>> getOrder(@PathVariable String cid) {
         Map<String, Object> response = new HashMap<>();
-        Order order = orderService.getOrder(orderId);
+        Order order = orderService.getOrder(cid);
         if (order != null) {
             response.put("success", true);
             response.put("data", order);
@@ -93,13 +93,13 @@ public class OrderController {
     }
 
     /**
-     * 根据用户ID获取订单列表
+     * 根据客户名称获取订单列表
      */
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<Map<String, Object>> getOrdersByUserId(@PathVariable String userId) {
+    @GetMapping("/user/{customerName}")
+    public ResponseEntity<Map<String, Object>> getOrdersByUserId(@PathVariable String customerName) {
         Map<String, Object> response = new HashMap<>();
         try {
-            List<Order> orders = orderService.getOrdersByUserId(userId);
+            List<Order> orders = orderService.getOrdersByUserId(customerName);
             response.put("success", true);
             response.put("data", orders);
             response.put("count", orders.size());
@@ -114,13 +114,13 @@ public class OrderController {
     /**
      * 更新订单
      */
-    @PutMapping("/{orderId}")
+    @PutMapping("/{cid}")
     public ResponseEntity<Map<String, Object>> updateOrder(
-            @PathVariable String orderId,
+            @PathVariable String cid,
             @RequestBody Order order) {
         Map<String, Object> response = new HashMap<>();
         try {
-            order.setOrderId(orderId);
+            order.setCid(cid);
             boolean success = orderService.updateOrder(order);
             if (success) {
                 orderDAO.saveToDatabase();
@@ -142,15 +142,39 @@ public class OrderController {
 
     /**
      * 删除订单
+     * @param cid 订单CID
+     * @param reason 删除原因（传入必填）
      */
-    @DeleteMapping("/{orderId}")
-    public ResponseEntity<Map<String, Object>> deleteOrder(@PathVariable String orderId) {
+    @DeleteMapping("/{cid}")
+    public ResponseEntity<Map<String, Object>> deleteOrder(
+            @PathVariable String cid,
+            @RequestParam(value = "reason", required = true) String reason) {
         Map<String, Object> response = new HashMap<>();
-        boolean success = orderService.deleteOrder(orderId);
+        
+        // 校验删除原因
+        if (reason == null || reason.trim().isEmpty()) {
+            response.put("success", false);
+            response.put("message", "删除失败：必须提供删除原因");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        
+        // 记录删除原因（在删除前更新订单描述）
+        Order order = orderService.getOrder(cid);
+        if (order != null) {
+            String deleteLog = String.format("[%s] 订单删除：%s",
+                    java.time.LocalDateTime.now().format(
+                            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                    reason);
+            String newDescription = (order.getDescription() != null ? order.getDescription() + "\n" : "") + deleteLog;
+            order.setDescription(newDescription);
+            orderService.updateOrder(order);
+        }
+        
+        boolean success = orderService.deleteOrder(cid);
         if (success) {
             orderDAO.saveToDatabase();
             response.put("success", true);
-            response.put("message", "订单删除成功");
+            response.put("message", "订单删除成功，删除原因: " + reason);
             return ResponseEntity.ok(response);
         } else {
             response.put("success", false);

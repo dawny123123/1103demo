@@ -32,18 +32,20 @@ class OrderTest {
     @Test
     @DisplayName("测试Order基础字段构造函数")
     void testBasicConstructor() {
-        String orderId = "12345";
-        String userId = "user123";
-        String productId = "product456";
-        Integer quantity = 2;
-        BigDecimal totalAmount = new BigDecimal("99.99");
+        String cid = "12345";
+        String customerName = "客户A";
+        String productVersion = "LINGMA_EXCLUSIVE";
+        Integer devScale = 10;
+        Integer purchasedLicCount = 2;
+        BigDecimal totalAmount = new BigDecimal("318.00");
         
-        Order order = new Order(orderId, userId, productId, quantity, totalAmount);
+        Order order = new Order(cid, customerName, productVersion, devScale, purchasedLicCount, totalAmount);
         
-        assertEquals(orderId, order.getOrderId());
-        assertEquals(userId, order.getUserId());
-        assertEquals(productId, order.getProductId());
-        assertEquals(quantity, order.getQuantity());
+        assertEquals(cid, order.getCid());
+        assertEquals(customerName, order.getCustomerName());
+        assertEquals(productVersion, order.getProductVersion());
+        assertEquals(devScale, order.getDevScale());
+        assertEquals(purchasedLicCount, order.getPurchasedLicCount());
         assertEquals(totalAmount, order.getTotalAmount());
         assertEquals(0, order.getStatus());
         assertNotNull(order.getCreateTime());
@@ -55,23 +57,25 @@ class OrderTest {
     @Test
     @DisplayName("测试Order全参数构造函数")
     void testFullConstructor() {
-        String orderId = "12345";
-        String userId = "user123";
-        String productId = "product456";
-        Integer quantity = 2;
-        BigDecimal totalAmount = new BigDecimal("99.99");
+        String cid = "12345";
+        String customerName = "客户A";
+        String productVersion = "LINGMA_EXCLUSIVE";
+        Integer devScale = 10;
+        Integer purchasedLicCount = 2;
+        BigDecimal totalAmount = new BigDecimal("318.00");
         Integer status = 1;
         String description = "测试订单描述";
         LocalDateTime createTime = LocalDateTime.now();
         LocalDateTime payTime = LocalDateTime.now().plusHours(1);
         LocalDateTime updateTime = LocalDateTime.now().plusHours(2);
         
-        Order order = new Order(orderId, userId, productId, quantity, totalAmount, status, description, createTime, payTime, updateTime);
+        Order order = new Order(cid, customerName, productVersion, devScale, purchasedLicCount, totalAmount, status, description, createTime, payTime, updateTime);
         
-        assertEquals(orderId, order.getOrderId());
-        assertEquals(userId, order.getUserId());
-        assertEquals(productId, order.getProductId());
-        assertEquals(quantity, order.getQuantity());
+        assertEquals(cid, order.getCid());
+        assertEquals(customerName, order.getCustomerName());
+        assertEquals(productVersion, order.getProductVersion());
+        assertEquals(devScale, order.getDevScale());
+        assertEquals(purchasedLicCount, order.getPurchasedLicCount());
         assertEquals(totalAmount, order.getTotalAmount());
         assertEquals(status, order.getStatus());
         assertEquals(description, order.getDescription());
@@ -88,21 +92,23 @@ class OrderTest {
     void testGettersAndSetters() {
         Order order = new Order();
         
-        String orderId = "12345";
-        String userId = "user123";
-        String productId = "product456";
-        Integer quantity = 2;
-        BigDecimal totalAmount = new BigDecimal("99.99");
+        String cid = "12345";
+        String customerName = "客户A";
+        String productVersion = "LINGMA_EXCLUSIVE";
+        Integer devScale = 10;
+        Integer purchasedLicCount = 2;
+        BigDecimal totalAmount = new BigDecimal("318.00");
         Integer status = 1;
         String description = "测试订单描述";
         LocalDateTime createTime = LocalDateTime.now();
         LocalDateTime payTime = LocalDateTime.now().plusHours(1);
         LocalDateTime updateTime = LocalDateTime.now().plusHours(2);
         
-        order.setOrderId(orderId);
-        order.setUserId(userId);
-        order.setProductId(productId);
-        order.setQuantity(quantity);
+        order.setCid(cid);
+        order.setCustomerName(customerName);
+        order.setProductVersion(productVersion);
+        order.setDevScale(devScale);
+        order.setPurchasedLicCount(purchasedLicCount);
         order.setTotalAmount(totalAmount);
         order.setStatus(status);
         order.setDescription(description);
@@ -110,10 +116,11 @@ class OrderTest {
         order.setPayTime(payTime);
         order.setUpdateTime(updateTime);
         
-        assertEquals(orderId, order.getOrderId());
-        assertEquals(userId, order.getUserId());
-        assertEquals(productId, order.getProductId());
-        assertEquals(quantity, order.getQuantity());
+        assertEquals(cid, order.getCid());
+        assertEquals(customerName, order.getCustomerName());
+        assertEquals(productVersion, order.getProductVersion());
+        assertEquals(devScale, order.getDevScale());
+        assertEquals(purchasedLicCount, order.getPurchasedLicCount());
         assertEquals(totalAmount, order.getTotalAmount());
         assertEquals(status, order.getStatus());
         assertEquals(description, order.getDescription());
@@ -128,23 +135,25 @@ class OrderTest {
     @Test
     @DisplayName("测试Order的toString方法")
     void testToString() {
-        String orderId = "12345";
-        String userId = "user123";
-        String productId = "product456";
-        Integer quantity = 2;
-        BigDecimal totalAmount = new BigDecimal("99.99");
+        String cid = "12345";
+        String customerName = "客户A";
+        String productVersion = "LINGMA_EXCLUSIVE";
+        Integer devScale = 10;
+        Integer purchasedLicCount = 2;
+        BigDecimal totalAmount = new BigDecimal("318.00");
         Integer status = 1;
         String description = "测试订单描述";
         
-        Order order = new Order(orderId, userId, productId, quantity, totalAmount);
+        Order order = new Order(cid, customerName, productVersion, devScale, purchasedLicCount, totalAmount);
         order.setStatus(status);
         order.setDescription(description);
         
         String orderString = order.toString();
-        assertTrue(orderString.contains("orderId='" + orderId + "'"));
-        assertTrue(orderString.contains("userId='" + userId + "'"));
-        assertTrue(orderString.contains("productId='" + productId + "'"));
-        assertTrue(orderString.contains("quantity=" + quantity));
+        assertTrue(orderString.contains("cid='" + cid + "'"));
+        assertTrue(orderString.contains("customerName='" + customerName + "'"));
+        assertTrue(orderString.contains("productVersion='" + productVersion + "'"));
+        assertTrue(orderString.contains("devScale=" + devScale));
+        assertTrue(orderString.contains("purchasedLicCount=" + purchasedLicCount));
         assertTrue(orderString.contains("totalAmount=" + totalAmount));
         assertTrue(orderString.contains("status=" + status));
         assertTrue(orderString.contains("description='" + description + "'"));

@@ -36,8 +36,13 @@ export const orderService = {
   },
 
   // 删除订单
-  deleteOrder: (orderId) => {
-    return api.delete(`/orders/${orderId}`);
+  deleteOrder: (orderId, deleteReason) => {
+    // 将删除原因作为查询参数传递
+    return api.delete(`/orders/${orderId}`, {
+      params: {
+        reason: deleteReason
+      }
+    });
   },
 
   // 健康检查

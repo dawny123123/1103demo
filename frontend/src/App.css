@@ -250,3 +250,201 @@
   padding: 20px;
   color: #666;
 }
+
+/* 描述单元格样式 */
+.description-cell {
+  max-width: 300px;
+  max-height: 100px;
+  overflow: auto;
+  cursor: help;
+}
+
+.description-text {
+  margin: 0;
+  padding: 8px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* 警告消息样式 */
+.message.warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+/* 全宽表单组样式 */
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* 表单提示文字样式 */
+.form-hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* ========== 影响力模块样式 ========== */
+
+/* 影响力管理区块 */
+.influence-section {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 3px solid #9C27B0;
+}
+
+.influence-section h2 {
+  color: #9C27B0;
+  margin-bottom: 20px;
+}
+
+.influence-section h3 {
+  color: #555;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+/* 影响力表单 */
+.influence-form {
+  background: #f9f3ff;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(156, 39, 176, 0.1);
+}
+
+.influence-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.influence-form textarea:focus {
+  outline: none;
+  border-color: #9C27B0;
+}
+
+/* 影响力列表区域 */
+.influences-list-section {
+  margin-top: 30px;
+}
+
+.influences-list-section .search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.influences-list-section .search-bar select {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+}
+
+/* 影响力表格 */
+.influences-table {
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.influences-table table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+
+.influences-table th,
+.influences-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.influences-table th {
+  background-color: #9C27B0;
+  color: white;
+  font-weight: 600;
+}
+
+.influences-table tr:hover {
+  background-color: #faf5ff;
+}
+
+/* 影响力状态标签 */
+.influence-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.influence-status-planned {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.influence-status-in_progress {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.influence-status-completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.influence-status-cancelled {
+  background-color: #e0e0e0;
+  color: #666;
+}
+
+/* 备注单元格 */
+.remark-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+
+/* 小按钮样式 */
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+/* 无数据提示 */
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  background: white;
+  border-radius: 8px;
+  margin-top: 20px;
+}
